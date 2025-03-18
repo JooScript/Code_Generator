@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+using CodeGenerator_Business;
 
 namespace CodeGenerator_ConsoleApp
 {

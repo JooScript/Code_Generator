@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 
-namespace CodeGenerator
+namespace CodeGenerator_Business
 {
     public static class clsDataAccessSettings
     {

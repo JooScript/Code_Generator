@@ -1,7 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using System.Collections.Generic;
 
-namespace CodeGenerator
+namespace CodeGenerator_Business
 {
     public class DatabaseHelper
     {
