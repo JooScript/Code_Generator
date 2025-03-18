@@ -1,0 +1,4 @@
+C:\Users\Yousef\Documents\GitHub\Code_Generator\CodeGenerator_ConsoleApp\obj\Debug\net9.0\CodeGenerator_ConsoleApp.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Yousef\Documents\GitHub\Code_Generator\CodeGenerator_ConsoleApp\obj\Debug\net9.0\CodeGenerator_ConsoleApp.AssemblyInfoInputs.cache
+C:\Users\Yousef\Documents\GitHub\Code_Generator\CodeGenerator_ConsoleApp\obj\Debug\net9.0\CodeGenerator_ConsoleApp.AssemblyInfo.cs
+C:\Users\Yousef\Documents\GitHub\Code_Generator\CodeGenerator_ConsoleApp\obj\Debug\net9.0\CodeGenerator_ConsoleApp.csproj.CoreCompileInputs.cache
