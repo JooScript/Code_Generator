@@ -44,7 +44,6 @@ namespace CodeGenerator_Business
             return connectionString;
         }
 
-
         public static string AppName()
         {
             if (_configuration == null)
@@ -52,7 +51,6 @@ namespace CodeGenerator_Business
                 throw new InvalidOperationException("Configuration is not initialized.");
             }
 
-            // Bind the ApplicationSettings section to the ApplicationSettings class
             var appSettings = _configuration.GetSection("ApplicationSettings").Get<ApplicationSettings>();
 
             if (appSettings == null || string.IsNullOrEmpty(appSettings.AppName))
@@ -70,7 +68,6 @@ namespace CodeGenerator_Business
                 throw new InvalidOperationException("Configuration is not initialized.");
             }
 
-            // Bind the ApplicationSettings section to the ApplicationSettings class
             var appSettings = _configuration.GetSection("ApplicationSettings").Get<ApplicationSettings>();
 
             if (appSettings == null || string.IsNullOrEmpty(appSettings.Version))

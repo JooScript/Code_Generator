@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Utilities\C# Utilities\Utilities.csproj" />
     <ProjectReference Include="..\CodeGenerator_Business\CodeGenerator_Business.csproj" />
   </ItemGroup>
 

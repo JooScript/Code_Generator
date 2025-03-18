@@ -1,5 +1,4 @@
 ﻿using Microsoft.Data.SqlClient;
-using System.Collections.Generic;
 
 namespace CodeGenerator_Business
 {
@@ -26,16 +25,16 @@ namespace CodeGenerator_Business
                         while (reader.Read())
                         {
                             string? tableName = reader["TABLE_NAME"].ToString();
+
                             if (tableName != null)
+                            {
                                 tables.Add(tableName);
+                            }
                         }
                     }
                 }
             }
             return tables;
         }
-
-
-
     }
 }

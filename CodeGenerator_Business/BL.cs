@@ -1,6 +1,4 @@
 using System;
-using System.IO;
-using System.Text;
 
 namespace CodeGenerator_Business
 {
@@ -12,9 +10,6 @@ namespace CodeGenerator_Business
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Inventory_DataAccess.DataAccess;
-using Inventory_DataAccess.Entities;
-using Utilities;
 
 namespace Inventory_Business.BusinessLogic
 {{

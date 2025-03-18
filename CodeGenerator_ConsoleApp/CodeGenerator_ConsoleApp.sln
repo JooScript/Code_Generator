@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeGenerator_ConsoleApp", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeGenerator_Business", "..\CodeGenerator_Business\CodeGenerator_Business.csproj", "{625753B9-6B16-42F6-B160-9761F341C14C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utilities", "..\..\Utilities\C# Utilities\Utilities.csproj", "{106FC7CD-C1CF-219B-BB85-241BA6C6B013}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{625753B9-6B16-42F6-B160-9761F341C14C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{625753B9-6B16-42F6-B160-9761F341C14C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{625753B9-6B16-42F6-B160-9761F341C14C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{106FC7CD-C1CF-219B-BB85-241BA6C6B013}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{106FC7CD-C1CF-219B-BB85-241BA6C6B013}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{106FC7CD-C1CF-219B-BB85-241BA6C6B013}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{106FC7CD-C1CF-219B-BB85-241BA6C6B013}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

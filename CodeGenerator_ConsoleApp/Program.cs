@@ -1,11 +1,11 @@
-﻿using System;
-using CodeGenerator_Business;
+﻿using CodeGenerator_Business;
+using Utilities;
 
 namespace CodeGenerator_ConsoleApp
 {
     internal class Program
     {
-        static void Main(string[] args)
+        public static void GenerateCode()
         {
             try
             {
@@ -18,10 +18,7 @@ namespace CodeGenerator_ConsoleApp
                 }
 
                 Console.WriteLine("Tables found in the database:");
-                foreach (var table in tables)
-                {
-                    Console.WriteLine(table);
-                }
+                clsConsoleUtil.ListConsolePrinting(tables);
 
                 foreach (var table in tables)
                 {
@@ -35,6 +32,11 @@ namespace CodeGenerator_ConsoleApp
             {
                 Console.WriteLine($"An error occurred: {ex.Message}");
             }
+        }
+
+        static void Main(string[] args)
+        {
+            //GenerateCode();
         }
     }
 }
