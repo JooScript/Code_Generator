@@ -36,7 +36,7 @@ namespace CodeGenerator_ConsoleApp
 
         static void Main(string[] args)
         {
-            //GenerateCode();
+
         }
     }
 }

@@ -3,20 +3,7 @@
   "WorkspaceRootPath": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_ConsoleApp\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{625753B9-6B16-42F6-B160-9761F341C14C}|..\\CodeGenerator_Business\\CodeGenerator_Business.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\codegenerator_business\\dataaccesssettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{106FC7CD-C1CF-219B-BB85-241BA6C6B013}|..\\..\\Utilities\\C# Utilities\\Utilities.csproj|c:\\users\\yousef\\documents\\github\\utilities\\c# utilities\\windows.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{4C80F3A9-F29C-4863-820F-A2D251F5C45A}|CodeGenerator_ConsoleApp.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\codegenerator_consoleapp\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{4C80F3A9-F29C-4863-820F-A2D251F5C45A}|CodeGenerator_ConsoleApp.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{106FC7CD-C1CF-219B-BB85-241BA6C6B013}|..\\..\\Utilities\\C# Utilities\\Utilities.csproj|c:\\users\\yousef\\documents\\github\\utilities\\c# utilities\\console.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{106FC7CD-C1CF-219B-BB85-241BA6C6B013}|..\\..\\Utilities\\C# Utilities\\Utilities.csproj|c:\\users\\yousef\\documents\\github\\utilities\\c# utilities\\utilities.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{106FC7CD-C1CF-219B-BB85-241BA6C6B013}|..\\..\\Utilities\\C# Utilities\\Utilities.csproj|c:\\users\\yousef\\documents\\github\\utilities\\c# utilities\\format.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -31,71 +18,19 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "DataAccessSettings.cs",
-              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Business\\DataAccessSettings.cs",
-              "RelativeDocumentMoniker": "..\\CodeGenerator_Business\\DataAccessSettings.cs",
-              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Business\\DataAccessSettings.cs",
-              "RelativeToolTip": "..\\CodeGenerator_Business\\DataAccessSettings.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAADwv2oAAAAAAAAAAAAAAA==",
+              "Title": "Format.cs",
+              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Utilities\\C# Utilities\\Format.cs",
+              "RelativeDocumentMoniker": "..\\..\\Utilities\\C# Utilities\\Format.cs",
+              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Utilities\\C# Utilities\\Format.cs",
+              "RelativeToolTip": "..\\..\\Utilities\\C# Utilities\\Format.cs",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAQwFgAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-18T07:16:10.39Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Windows.cs",
-              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Utilities\\C# Utilities\\Windows.cs",
-              "RelativeDocumentMoniker": "..\\..\\Utilities\\C# Utilities\\Windows.cs",
-              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Utilities\\C# Utilities\\Windows.cs",
-              "RelativeToolTip": "..\\..\\Utilities\\C# Utilities\\Windows.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-18T07:15:40.622Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Console.cs",
-              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Utilities\\C# Utilities\\Console.cs",
-              "RelativeDocumentMoniker": "..\\..\\Utilities\\C# Utilities\\Console.cs",
-              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Utilities\\C# Utilities\\Console.cs",
-              "RelativeToolTip": "..\\..\\Utilities\\C# Utilities\\Console.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAfAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-18T07:14:54.731Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "Utilities.cs",
-              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Utilities\\C# Utilities\\Utilities.cs",
-              "RelativeDocumentMoniker": "..\\..\\Utilities\\C# Utilities\\Utilities.cs",
-              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Utilities\\C# Utilities\\Utilities.cs",
-              "RelativeToolTip": "..\\..\\Utilities\\C# Utilities\\Utilities.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-18T06:37:49.841Z",
+              "WhenOpened": "2025-03-18T13:59:55.671Z",
               "EditorCaption": ""
             },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_ConsoleApp\\Program.cs",
-              "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_ConsoleApp\\Program.cs",
-              "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAAUAAAAAAAAAAAAxwBIAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-18T02:56:24.41Z",
-              "EditorCaption": ""
             }
           ]
         }
