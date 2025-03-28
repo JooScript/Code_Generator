@@ -18,7 +18,7 @@ namespace CodeGenerator_ConsoleApp
                 }
 
                 Console.WriteLine("Tables found in the database:");
-                clsConsoleUtil.ListConsolePrinting(tables);
+                clsConsole.ListConsolePrinting(tables);
 
                 foreach (var table in tables)
                 {
