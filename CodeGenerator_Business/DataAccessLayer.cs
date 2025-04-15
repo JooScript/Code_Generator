@@ -1,18 +1,18 @@
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using System.Diagnostics;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.CompilerServices;
 using System.Text;
 using Utilities;
 
 namespace CodeGenerator_Business
 {
-    public class clsDalGenerator
+    public static class clsDalGenerator
     {
-        public clsDalGenerator(string TName)
+        static clsDalGenerator()
         {
-            _TableName = TName ?? "Empty";
+            clsDatabase.Initialize(clsDataAccessSettings.ConnectionString());
+            columns = clsDatabase.GetTableColumns(_TableName);
         }
+
+        private static List<clsDatabase.ColumnInfo> columns;
+
 
         #region Prop
 
@@ -88,10 +88,6 @@ namespace CodeGenerator_Business
 
         private static string tResultsForGetByID()
         {
-            clsDatabase.Initialize(clsDataAccessSettings.ConnectionString());
-
-            var columns = clsDatabase.GetTableColumns(_TableName);
-
             var columnStrings = columns.Select(column =>
             {
                 string dataType = clsUtil.ConvertDbTypeToCSharpType(column.DataType);
@@ -104,9 +100,6 @@ namespace CodeGenerator_Business
 
         private static string InfoForGetByID()
         {
-            clsDatabase.Initialize(clsDataAccessSettings.ConnectionString());
-
-            var columns = clsDatabase.GetTableColumns(_TableName);
             if (columns == null || !columns.Any())
             {
                 return string.Empty;
@@ -145,9 +138,6 @@ namespace CodeGenerator_Business
 
         private static string returnsForGetByID()
         {
-            clsDatabase.Initialize(clsDataAccessSettings.ConnectionString());
-
-            var columns = clsDatabase.GetTableColumns(_TableName);
             if (columns == null || !columns.Any())
             {
                 return string.Empty;
@@ -182,10 +172,6 @@ namespace CodeGenerator_Business
 
         private static string ParamatersForAddNew()
         {
-            clsDatabase.Initialize(clsDataAccessSettings.ConnectionString());
-
-            var columns = clsDatabase.GetTableColumns(_TableName);
-
             var columnStrings = columns
                 .Where(column => !column.IsIdentity)
                 .Select(column =>
@@ -200,9 +186,6 @@ namespace CodeGenerator_Business
 
         private static string ObjectForAddNew()
         {
-            clsDatabase.Initialize(clsDataAccessSettings.ConnectionString());
-
-            var columns = clsDatabase.GetTableColumns(_TableName);
             if (columns == null || !columns.Any())
             {
                 return string.Empty;
@@ -235,9 +218,6 @@ namespace CodeGenerator_Business
 
         private static string ObjectForUpdate()
         {
-            clsDatabase.Initialize(clsDataAccessSettings.ConnectionString());
-
-            var columns = clsDatabase.GetTableColumns(_TableName);
             if (columns == null || !columns.Any())
             {
                 return string.Empty;
