@@ -31,4 +31,8 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.3" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\..\CS_Utilities\C# Utilities\Utilities.csproj" />
+	</ItemGroup>
+
 </Project>

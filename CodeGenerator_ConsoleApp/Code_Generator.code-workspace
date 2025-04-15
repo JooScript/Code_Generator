@@ -2,9 +2,12 @@
   "folders": [
     {
       "path": ".."
+    },
+    {
+      "path": "../../CS_Utilities/C# Utilities"
     }
   ],
   "settings": {
-    "cSpell.words": [ "SSPI" ]
+    "cSpell.words": ["Smalize", "SSPI"]
   }
 }

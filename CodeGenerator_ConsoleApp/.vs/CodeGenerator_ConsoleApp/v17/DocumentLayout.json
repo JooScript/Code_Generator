@@ -3,6 +3,9 @@
   "WorkspaceRootPath": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_ConsoleApp\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{625753B9-6B16-42F6-B160-9761F341C14C}|..\\CodeGenerator_Business\\CodeGenerator_Business.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\codegenerator_business\\dataaccesslayer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{4C80F3A9-F29C-4863-820F-A2D251F5C45A}|CodeGenerator_ConsoleApp.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\codegenerator_consoleapp\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{4C80F3A9-F29C-4863-820F-A2D251F5C45A}|CodeGenerator_ConsoleApp.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
@@ -14,24 +17,37 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 1,
           "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "DataAccessLayer.cs",
+              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Business\\DataAccessLayer.cs",
+              "RelativeDocumentMoniker": "..\\CodeGenerator_Business\\DataAccessLayer.cs",
+              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Business\\DataAccessLayer.cs",
+              "RelativeToolTip": "..\\CodeGenerator_Business\\DataAccessLayer.cs",
+              "ViewState": "AgIAAPgAAAAAAAAAAAAgwAoBAAAXAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-14T13:35:17.87Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_ConsoleApp\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
               "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_ConsoleApp\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACYAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAGwAAAAbAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-03-27T18:43:49.413Z",
               "EditorCaption": ""
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
             }
           ]
         }
