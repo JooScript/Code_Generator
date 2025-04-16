@@ -1,10 +1,15 @@
 using System.Text;
 using Utilities;
 
-namespace CodeGenerator_Business
+namespace CodeGenerator_BusinessLogic
 {
     public static class clsBlGenerator
     {
+        public enum enCodeStyle
+        {
+            EFStyle = 0,
+            AdoStyle = 1
+        }
         private static string _TableName;
         private static List<clsDatabase.ColumnInfo> _columns;
 
@@ -87,7 +92,9 @@ namespace CodeGenerator_Business
 
         #endregion
 
-        #region Support Methods
+        #region EF Code
+
+        #region EF Support Methods
 
         private static string Properties()
         {
@@ -244,16 +251,12 @@ namespace CodeGenerator_Business
 
         #endregion
 
-        #region Class Structure
+        #region EF Class Structure
 
         private static string TopUsing()
         {
             string appName = clsDataAccessSettings.AppName();
-            return $@"using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using {appName}_DataAccess.DataAccess;
+            return $@"using {appName}_DataAccess.DataAccess;
 using {appName}_DataAccess.Entities;
 using Utilities;
 
@@ -488,7 +491,7 @@ namespace {appName}_Business.BusinessLogic
 
         #endregion
 
-        public static bool GenerateBlCode(string tableName, string? folderPath = null)
+        public static bool GenerateEFBlCode(string tableName, string? folderPath = null)
         {
             if (tableName == null)
             {
@@ -520,8 +523,16 @@ namespace {appName}_Business.BusinessLogic
             blCode.Append(IsExistMethod());
             blCode.Append(Closing());
 
-            string fileName = $"cls{tableName}.cs";
+            string fileName = $"cls{_FormattedTNSingle}.cs";
             return clsFile.StoreToFile(blCode.ToString(), fileName, folderPath, true);
         }
+
+        #endregion
+
+        public static bool GenerateBlCode(string tableName, string? folderPath = null, enCodeStyle codeStyle = enCodeStyle.EFStyle)
+        {
+            return codeStyle == enCodeStyle.EFStyle ? GenerateEFBlCode(tableName, folderPath) : false;
+        }
+
     }
 }

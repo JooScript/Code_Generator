@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 
-namespace CodeGenerator_Business
+namespace CodeGenerator_BusinessLogic
 {
     public static class clsDataAccessSettings
     {
@@ -11,23 +11,17 @@ namespace CodeGenerator_Business
             try
             {
                 var basePath = Directory.GetCurrentDirectory();
-                var settingsPath = Path.Combine(basePath, "AppSettings.json");
+                var settingsPath = Path.Combine(basePath, "appsettings.json");
 
                 if (!File.Exists(settingsPath))
                 {
-                    throw new FileNotFoundException($"AppSettings.json not found at: {settingsPath}");
+                    throw new FileNotFoundException($"appsettings.json not found at: {settingsPath}");
                 }
 
                 _configuration = new ConfigurationBuilder()
                     .SetBasePath(basePath)
-                    .AddJsonFile("AppSettings.json", optional: false, reloadOnChange: true)
+                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                     .Build();
-
-                var testConnection = _configuration.GetConnectionString("DefaultConnection");
-                if (string.IsNullOrEmpty(testConnection))
-                {
-                    throw new InvalidOperationException("Default Connection is missing in AppSettings.json");
-                }
             }
             catch (Exception ex)
             {

@@ -1,16 +1,21 @@
 using System.Text;
 using Utilities;
 
-namespace CodeGenerator_Business
+namespace CodeGenerator_BusinessLogic
 {
     public static class clsDaGenerator
     {
+        public enum enCodeStyle
+        {
+            EFStyle = 0,
+            AdoStyle = 1
+        }
         private static string _TableName;
         private static List<clsDatabase.ColumnInfo> _columns;
 
         #region Properties
 
-        private static string TableName
+        public static string TableName
         {
             get
             {
@@ -87,7 +92,9 @@ namespace CodeGenerator_Business
 
         #endregion
 
-        #region Support Methods
+        #region EF Code
+
+        #region EF Support Methods
 
         #region For GetByID
 
@@ -259,7 +266,7 @@ namespace CodeGenerator_Business
 
         #endregion
 
-        #region Class Structure
+        #region EF Class Structure
 
         private static string TopUsing()
         {
@@ -473,7 +480,7 @@ namespace {AppName}_DataAccess.DataAccess
 
         #endregion
 
-        public static bool GenerateDalCode(string tableName, string? folderPath = null)
+        public static bool GenerateEFDalCode(string tableName, string? folderPath = null)
         {
             if (tableName == null)
             {
@@ -500,8 +507,15 @@ namespace {AppName}_DataAccess.DataAccess
             dalCode.Append(IsExistMethod());
             dalCode.Append(Closing());
 
-            string fileName = $"cls{tableName}Data.cs";
+            string fileName = $"cls{_FormattedTNSingle}Data.cs";
             return clsFile.StoreToFile(dalCode.ToString(), fileName, folderPath, true);
+        }
+
+        #endregion
+
+        public static bool GenerateDalCode(string tableName, string? folderPath = null, enCodeStyle codeStyle = enCodeStyle.EFStyle)
+        {
+            return codeStyle == enCodeStyle.EFStyle ? GenerateEFDalCode(tableName, folderPath) : false;
         }
 
     }

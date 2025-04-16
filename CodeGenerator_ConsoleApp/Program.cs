@@ -1,4 +1,4 @@
-﻿using CodeGenerator_Business;
+﻿using CodeGenerator_BusinessLogic;
 using Utilities;
 
 namespace CodeGenerator_ConsoleApp
@@ -10,9 +10,10 @@ namespace CodeGenerator_ConsoleApp
             try
             {
                 clsDatabase.Initialize(clsDataAccessSettings.ConnectionString());
+
                 List<string> tables = clsDatabase.GetTableNames();
 
-                if (tables.Count == 0)
+                if (tables == null || tables.Count == 0)
                 {
                     Console.WriteLine("No tables found in the database.");
                     return;
@@ -22,28 +23,33 @@ namespace CodeGenerator_ConsoleApp
                 Console.WriteLine("-----------------------------");
                 clsConsole.ListConsolePrinting(tables);
 
-                foreach (var table in tables)
+                foreach (string table in tables)
                 {
-                    clsDaGenerator.GenerateDalCode(table);
-                    clsBlGenerator.GenerateBlCode(table);
+                    bool dalSuccess = clsDaGenerator.GenerateDalCode(table);
+                    bool blSuccess = clsBlGenerator.GenerateBlCode(table);
+
+                    if (!dalSuccess || !blSuccess)
+                    {
+                        throw new Exception(
+                            $"Code generation failed for table '{table}'. " +
+                            $"{(dalSuccess ? "" : "DAL generation failed. ")}" +
+                            $"{(blSuccess ? "" : "BL generation failed.")}");
+                    }
                 }
 
-                Console.BackgroundColor = ConsoleColor.Green;
-                Console.WriteLine("");
-                Console.WriteLine("-------------------------------------------------------------");
-                Console.WriteLine("|Code generation completed. Check the Generated Code folder.|");
-                Console.WriteLine("-------------------------------------------------------------");
-                Console.WriteLine("");
-                Console.ResetColor();
+                clsConsole.PrintColoredMessage(
+                    "---------------------------------------------------------------" +
+                    Environment.NewLine +
+                    "| Code generation completed. Check the Generated Code folder. |" +
+                    Environment.NewLine +
+                    "---------------------------------------------------------------",
+                    ConsoleColor.Green
+                );
             }
             catch (Exception ex)
             {
                 clsUtil.ErrorLogger(ex);
-                Console.BackgroundColor = ConsoleColor.Red;
-                Console.WriteLine("");
-                Console.WriteLine($"An error occurred: {ex.Message}");
-                Console.WriteLine("");
-                Console.ResetColor();
+                clsConsole.PrintColoredMessage($"An error occurred: {ex.Message}", ConsoleColor.Red);
             }
         }
 
