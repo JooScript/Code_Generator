@@ -3,26 +3,31 @@ using Utilities;
 
 namespace CodeGenerator_Business
 {
-    public static class clsDalGenerator
+    public static class clsDaGenerator
     {
-        static clsDalGenerator()
+        private static string _TableName;
+        private static List<clsDatabase.ColumnInfo> _columns;
+
+        #region Properties
+
+        private static string TableName
         {
-            clsDatabase.Initialize(clsDataAccessSettings.ConnectionString());
-            columns = clsDatabase.GetTableColumns(_TableName);
+            get
+            {
+                return _TableName;
+            }
+            set
+            {
+                if (_TableName != value)
+                {
+                    _TableName = value;
+                    clsDatabase.Initialize(clsDataAccessSettings.ConnectionString());
+                    _columns = clsDatabase.GetTableColumns(_TableName);
+                }
+            }
         }
 
-        private static List<clsDatabase.ColumnInfo> columns;
-
-
-        #region Prop
-
-        private static string _TableName
-        {
-            get;
-            set;
-        }
-
-        private static string FormattedTNSingle
+        private static string _FormattedTNSingle
         {
             get
             {
@@ -36,7 +41,7 @@ namespace CodeGenerator_Business
             }
         }
 
-        private static string FormattedTNPluralize
+        private static string _FormattedTNPluralize
         {
             get
             {
@@ -50,7 +55,7 @@ namespace CodeGenerator_Business
             }
         }
 
-        private static string FormattedTNSingleVar
+        private static string _FormattedTNSingleVar
         {
             get
             {
@@ -65,7 +70,7 @@ namespace CodeGenerator_Business
             }
         }
 
-        private static string FormattedTNPluralizeVar
+        private static string _FormattedTNPluralizeVar
         {
             get
             {
@@ -82,13 +87,13 @@ namespace CodeGenerator_Business
 
         #endregion
 
-        #region Support Func
+        #region Support Methods
 
         #region For GetByID
 
         private static string tResultsForGetByID()
         {
-            var columnStrings = columns.Select(column =>
+            var columnStrings = _columns.Select(column =>
             {
                 string dataType = clsUtil.ConvertDbTypeToCSharpType(column.DataType);
                 string isNullable = column.IsNullable ? "?" : string.Empty;
@@ -100,21 +105,21 @@ namespace CodeGenerator_Business
 
         private static string InfoForGetByID()
         {
-            if (columns == null || !columns.Any())
+            if (_columns == null || !_columns.Any())
             {
                 return string.Empty;
             }
 
             var resultBuilder = new StringBuilder();
 
-            foreach (var column in columns)
+            foreach (var column in _columns)
             {
                 string formattedName = clsFormat.CapitalizeFirstChars(clsFormat.FormatId(column.Name));
                 string csharpType = clsUtil.ConvertDbTypeToCSharpType(column.DataType);
 
                 if (column.IsPrimaryKey)
                 {
-                    resultBuilder.AppendLine($"{FormattedTNSingleVar.ToLower()}Id,");
+                    resultBuilder.AppendLine($"{_FormattedTNSingleVar.ToLower()}Id,");
                     continue;
                 }
 
@@ -138,23 +143,23 @@ namespace CodeGenerator_Business
 
         private static string returnsForGetByID()
         {
-            if (columns == null || !columns.Any())
+            if (_columns == null || !_columns.Any())
             {
                 return string.Empty;
             }
 
             var resultBuilder = new StringBuilder();
 
-            foreach (var column in columns)
+            foreach (var column in _columns)
             {
                 string formattedName = clsFormat.CapitalizeFirstChars(clsFormat.FormatId(column.Name));
                 if (column.IsIdentity)
                 {
-                    resultBuilder.AppendLine($"{FormattedTNSingleVar.ToLower()}Info.{clsFormat.FormatId(column.Name.ToLower())},");
+                    resultBuilder.AppendLine($"{_FormattedTNSingleVar.ToLower()}Info.{clsFormat.FormatId(column.Name.ToLower())},");
                 }
                 else
                 {
-                    resultBuilder.AppendLine($"{FormattedTNSingleVar.ToLower()}Info.{formattedName},");
+                    resultBuilder.AppendLine($"{_FormattedTNSingleVar.ToLower()}Info.{formattedName},");
                 }
             }
 
@@ -172,7 +177,7 @@ namespace CodeGenerator_Business
 
         private static string ParamatersForAddNew()
         {
-            var columnStrings = columns
+            var columnStrings = _columns
                 .Where(column => !column.IsIdentity)
                 .Select(column =>
                 {
@@ -186,14 +191,14 @@ namespace CodeGenerator_Business
 
         private static string ObjectForAddNew()
         {
-            if (columns == null || !columns.Any())
+            if (_columns == null || !_columns.Any())
             {
                 return string.Empty;
             }
 
             var resultBuilder = new StringBuilder();
 
-            foreach (var column in columns)
+            foreach (var column in _columns)
             {
                 string formattedName = clsFormat.CapitalizeFirstChars(clsFormat.FormatId(column.Name));
 
@@ -218,7 +223,7 @@ namespace CodeGenerator_Business
 
         private static string ObjectForUpdate()
         {
-            if (columns == null || !columns.Any())
+            if (_columns == null || !_columns.Any())
             {
                 return string.Empty;
             }
@@ -226,7 +231,7 @@ namespace CodeGenerator_Business
             var resultBuilder = new StringBuilder();
             bool firstLine = true;
 
-            foreach (var column in columns)
+            foreach (var column in _columns)
             {
                 if (column.IsPrimaryKey)
                 {
@@ -244,7 +249,7 @@ namespace CodeGenerator_Business
                     firstLine = false;
                 }
 
-                resultBuilder.Append($"existing{FormattedTNSingle}.{formattedName} = {formattedName};");
+                resultBuilder.Append($"existing{_FormattedTNSingle}.{formattedName} = {formattedName};");
             }
 
             return resultBuilder.ToString();
@@ -254,7 +259,8 @@ namespace CodeGenerator_Business
 
         #endregion
 
-        #region Misc
+        #region Class Structure
+
         private static string TopUsing()
         {
             string AppName = clsDataAccessSettings.AppName();
@@ -268,31 +274,22 @@ using Utilities;
 
 namespace {AppName}_DataAccess.DataAccess
 {{
-    public class cls{FormattedTNSingle}Data
+    public class cls{_FormattedTNSingle}Data
     {{";
         }
 
-        private static string LastSection()
+        private static string GetAllMethod()
         {
-            return $@"}}}}";
-        }
-
-        #endregion
-
-        #region Class Func
-
-        private static string GetAll()
-        {
-            return $@"public static async Task<List<{FormattedTNSingle}>> GetAll{FormattedTNPluralize}Async(int pageNumber = 1, int pageSize = 50)
+            return $@"public static async Task<List<{_FormattedTNSingle}>> GetAll{_FormattedTNPluralize}Async(int pageNumber = 1, int pageSize = 50)
         {{
             try
             {{
                 await using var context = new AppDbContext();
-                var query = context.{FormattedTNPluralize}.AsNoTracking();
+                var query = context.{_FormattedTNPluralize}.AsNoTracking();
 
-                var {FormattedTNPluralizeVar} = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync().ConfigureAwait(false);
+                var {_FormattedTNPluralizeVar} = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync().ConfigureAwait(false);
 
-                return ({FormattedTNPluralizeVar});
+                return ({_FormattedTNPluralizeVar});
             }}
             catch (Exception ex)
             {{
@@ -304,21 +301,21 @@ namespace {AppName}_DataAccess.DataAccess
 ";
         }
 
-        private static string GetByID()
+        private static string GetByIDMethod()
         {
-            return $@"public static async Task<({tResultsForGetByID()})?> Get{FormattedTNSingle}InfoByIdAsync(int {FormattedTNSingleVar.ToLower()}Id)
+            return $@"public static async Task<({tResultsForGetByID()})?> Get{_FormattedTNSingle}InfoByIdAsync(int {_FormattedTNSingleVar.ToLower()}Id)
 {{
-    if ({FormattedTNSingleVar.ToLower()}Id <= 0)
+    if ({_FormattedTNSingleVar.ToLower()}Id <= 0)
     {{
-        throw new ArgumentException(""{FormattedTNSingle} ID must be greater than 0."", nameof({FormattedTNSingleVar.ToLower()}Id));
+        throw new ArgumentException(""{_FormattedTNSingle} ID must be greater than 0."", nameof({_FormattedTNSingleVar.ToLower()}Id));
     }}
 
     try
     {{
         await using var context = new AppDbContext();
 
-        var {FormattedTNSingleVar.ToLower()}Info = await context.{FormattedTNPluralize}
-            .Where(x => x.{FormattedTNSingle}Id == {FormattedTNSingleVar.ToLower()}Id)
+        var {_FormattedTNSingleVar.ToLower()}Info = await context.{_FormattedTNPluralize}
+            .Where(x => x.{_FormattedTNSingle}Id == {_FormattedTNSingleVar.ToLower()}Id)
             .Select(x => new
             {{
                 {InfoForGetByID()}             
@@ -327,7 +324,7 @@ namespace {AppName}_DataAccess.DataAccess
             .SingleOrDefaultAsync()
             .ConfigureAwait(false);
 
-        if ({FormattedTNSingleVar.ToLower()}Info == null)
+        if ({_FormattedTNSingleVar.ToLower()}Info == null)
         {{
             return null;
         }}
@@ -346,22 +343,22 @@ namespace {AppName}_DataAccess.DataAccess
 ";
         }
 
-        private static string AddNew()
+        private static string AddNewMethod()
         {
-            return $@"public static async Task<int> AddNew{FormattedTNSingle}Async({ParamatersForAddNew()})
+            return $@"public static async Task<int> AddNew{_FormattedTNSingle}Async({ParamatersForAddNew()})
         {{
             try
             {{
-                {FormattedTNSingle} new{FormattedTNSingle} = new {FormattedTNSingle}
+                {_FormattedTNSingle} new{_FormattedTNSingle} = new {_FormattedTNSingle}
                 {{
 {ObjectForAddNew()}   
                 }};
 
                 await using var context = new AppDbContext();
-                await context.{FormattedTNPluralize}.AddAsync(new{FormattedTNSingle}).ConfigureAwait(false);
+                await context.{_FormattedTNPluralize}.AddAsync(new{_FormattedTNSingle}).ConfigureAwait(false);
                 await context.SaveChangesAsync().ConfigureAwait(false);
 
-                return new{FormattedTNSingle}.{FormattedTNSingle}Id;
+                return new{_FormattedTNSingle}.{_FormattedTNSingle}Id;
             }}
             catch (Exception ex)
             {{
@@ -373,11 +370,11 @@ namespace {AppName}_DataAccess.DataAccess
 ";
         }
 
-        private static string Update()
+        private static string UpdateMethod()
         {
-            return $@"public static async Task<bool> Update{FormattedTNSingle}Async(int {FormattedTNSingleVar}Id, int CountryId, int GovernorateId, string StreetName, string BuildingName, int CityId, string District, string NearestLandmark, byte AddressType, int? PersonId, int? CompanyId)
+            return $@"public static async Task<bool> Update{_FormattedTNSingle}Async(int {_FormattedTNSingleVar}Id, int CountryId, int GovernorateId, string StreetName, string BuildingName, int CityId, string District, string NearestLandmark, byte AddressType, int? PersonId, int? CompanyId)
         {{
-            if ({FormattedTNSingleVar}Id <= 0)
+            if ({_FormattedTNSingleVar}Id <= 0)
             {{
                 return false;
             }}
@@ -385,9 +382,9 @@ namespace {AppName}_DataAccess.DataAccess
             try
             {{
                 await using var context = new AppDbContext();
-                var existing{FormattedTNSingle} = await context.Addresses.SingleOrDefaultAsync(x => x.{FormattedTNSingle}Id == {FormattedTNSingleVar}Id).ConfigureAwait(false);
+                var existing{_FormattedTNSingle} = await context.Addresses.SingleOrDefaultAsync(x => x.{_FormattedTNSingle}Id == {_FormattedTNSingleVar}Id).ConfigureAwait(false);
 
-                if (existing{FormattedTNSingle} == null)
+                if (existing{_FormattedTNSingle} == null)
                 {{
                     return false;
                 }}
@@ -407,11 +404,11 @@ namespace {AppName}_DataAccess.DataAccess
 ";
         }
 
-        private static string Delete()
+        private static string DeleteMethod()
         {
-            return $@"public static async Task<bool> Delete{FormattedTNSingle}Async(int {FormattedTNSingleVar}Id)
+            return $@"public static async Task<bool> Delete{_FormattedTNSingle}Async(int {_FormattedTNSingleVar}Id)
         {{
-            if ({FormattedTNSingleVar}Id <= 0)
+            if ({_FormattedTNSingleVar}Id <= 0)
             {{
                 return false;
             }}
@@ -419,14 +416,14 @@ namespace {AppName}_DataAccess.DataAccess
             try
             {{
                 await using var context = new AppDbContext();
-                {FormattedTNSingle}? {FormattedTNSingleVar} = await context.{FormattedTNPluralize}.SingleOrDefaultAsync(x => x.{FormattedTNPluralizeVar}Id == {FormattedTNSingleVar}Id).ConfigureAwait(false);
+                {_FormattedTNSingle}? {_FormattedTNSingleVar} = await context.{_FormattedTNPluralize}.SingleOrDefaultAsync(x => x.{_FormattedTNPluralizeVar}Id == {_FormattedTNSingleVar}Id).ConfigureAwait(false);
 
-                if ({FormattedTNSingleVar} == null)
+                if ({_FormattedTNSingleVar} == null)
                 {{
                     return false;
                 }}
 
-                context.{FormattedTNPluralize}.Remove({FormattedTNSingleVar});
+                context.{_FormattedTNPluralize}.Remove({_FormattedTNSingleVar});
                 await context.SaveChangesAsync().ConfigureAwait(false);
 
                 return true;
@@ -441,21 +438,21 @@ namespace {AppName}_DataAccess.DataAccess
 ";
         }
 
-        private static string IsExist()
+        private static string IsExistMethod()
         {
-            return $@"public static async Task<bool> Is{FormattedTNSingle}ExistsAsync(int {FormattedTNSingleVar}Id)
+            return $@"public static async Task<bool> Is{_FormattedTNSingle}ExistsAsync(int {_FormattedTNSingleVar}Id)
         {{
-            if ({FormattedTNSingleVar}Id <= 0)
+            if ({_FormattedTNSingleVar}Id <= 0)
             {{
                 return false;
             }}
 
-            const string sqlQuery = ""EXEC SP_Check{FormattedTNSingle}Exists @{FormattedTNSingle}ID = @{FormattedTNSingle}ID"";
+            const string sqlQuery = ""EXEC SP_Check{_FormattedTNSingle}Exists @{_FormattedTNSingle}ID = @{_FormattedTNSingle}ID"";
 
             try
             {{
                 await using var context = new AppDbContext();
-                int result = await context.Database.SqlQueryRaw<int>(sqlQuery, new SqlParameter(""@{FormattedTNSingle}ID"", {FormattedTNSingleVar}Id)).SingleOrDefaultAsync().ConfigureAwait(false);
+                int result = await context.Database.SqlQueryRaw<int>(sqlQuery, new SqlParameter(""@{_FormattedTNSingle}ID"", {_FormattedTNSingleVar}Id)).SingleOrDefaultAsync().ConfigureAwait(false);
 
                 return result == 1;
             }}
@@ -469,17 +466,22 @@ namespace {AppName}_DataAccess.DataAccess
 ";
         }
 
+        private static string Closing()
+        {
+            return $@"}}}}";
+        }
+
         #endregion
 
-        public static bool GenerateDalCode(string TableName, string? folderPath = null)
+        public static bool GenerateDalCode(string tableName, string? folderPath = null)
         {
-            if (TableName == null)
+            if (tableName == null)
             {
                 return false;
             }
             else
             {
-                _TableName = TableName;
+                TableName = tableName;
             }
 
             if (string.IsNullOrEmpty(folderPath))
@@ -490,16 +492,16 @@ namespace {AppName}_DataAccess.DataAccess
             StringBuilder dalCode = new StringBuilder();
 
             dalCode.Append(TopUsing());
-            dalCode.Append(GetAll());
-            dalCode.Append(GetByID());
-            dalCode.Append(AddNew());
-            dalCode.Append(Update());
-            dalCode.Append(Delete());
-            dalCode.Append(IsExist());
-            dalCode.Append(LastSection());
+            dalCode.Append(GetAllMethod());
+            dalCode.Append(GetByIDMethod());
+            dalCode.Append(AddNewMethod());
+            dalCode.Append(UpdateMethod());
+            dalCode.Append(DeleteMethod());
+            dalCode.Append(IsExistMethod());
+            dalCode.Append(Closing());
 
-            string fileName = $"cls{TableName}Data.cs";
-            return clsFile.StoreToFile(dalCode.ToString(), folderPath, fileName, true);
+            string fileName = $"cls{tableName}Data.cs";
+            return clsFile.StoreToFile(dalCode.ToString(), fileName, folderPath, true);
         }
 
     }

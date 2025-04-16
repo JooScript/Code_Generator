@@ -10,14 +10,28 @@ namespace CodeGenerator_Business
         {
             try
             {
+                var basePath = Directory.GetCurrentDirectory();
+                var settingsPath = Path.Combine(basePath, "AppSettings.json");
+
+                if (!File.Exists(settingsPath))
+                {
+                    throw new FileNotFoundException($"AppSettings.json not found at: {settingsPath}");
+                }
+
                 _configuration = new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .SetBasePath(basePath)
                     .AddJsonFile("AppSettings.json", optional: false, reloadOnChange: true)
                     .Build();
+
+                var testConnection = _configuration.GetConnectionString("DefaultConnection");
+                if (string.IsNullOrEmpty(testConnection))
+                {
+                    throw new InvalidOperationException("Default Connection is missing in AppSettings.json");
+                }
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Failed to initialize configuration.", ex);
+                throw new InvalidOperationException($"Failed to initialize configuration. Error: {ex.Message}", ex);
             }
         }
 
@@ -28,81 +42,86 @@ namespace CodeGenerator_Business
 
         public static string ConnectionString(enConnectionStringType ConnectionStringType = enConnectionStringType.DefaultConnection)
         {
-            if (_configuration == null)
+            try
             {
-                throw new InvalidOperationException("Configuration is not initialized.");
+                string connectionStringKey = ConnectionStringType.ToString();
+                var connectionString = _configuration.GetConnectionString(connectionStringKey);
+
+                if (string.IsNullOrEmpty(connectionString))
+                {
+                    throw new InvalidOperationException($"Connection string '{connectionStringKey}' is missing or empty in AppSettings.json.");
+                }
+
+                return connectionString;
             }
-
-            string connectionStringKey = ConnectionStringType.ToString();
-            var connectionString = _configuration.GetConnectionString(connectionStringKey);
-
-            if (string.IsNullOrEmpty(connectionString))
+            catch (Exception ex)
             {
-                throw new InvalidOperationException($"Connection string '{connectionStringKey}' is missing or empty in AppSettings.json.");
+                throw new InvalidOperationException($"Failed to get connection string. Error: {ex.Message}", ex);
             }
-
-            return connectionString;
         }
 
         public static string AppName()
         {
-            if (_configuration == null)
+            try
             {
-                throw new InvalidOperationException("Configuration is not initialized.");
+                var appSettings = _configuration.GetSection("ApplicationSettings").Get<ApplicationSettings>();
+
+                if (appSettings == null || string.IsNullOrEmpty(appSettings.AppName))
+                {
+                    throw new InvalidOperationException("ApplicationSettings section or AppName is missing or empty in AppSettings.json.");
+                }
+
+                return appSettings.AppName;
             }
-
-            var appSettings = _configuration.GetSection("ApplicationSettings").Get<ApplicationSettings>();
-
-            if (appSettings == null || string.IsNullOrEmpty(appSettings.AppName))
+            catch (Exception ex)
             {
-                throw new InvalidOperationException("ApplicationSettings section or AppName is missing or empty in AppSettings.json.");
+                throw new InvalidOperationException($"Failed to get AppName. Error: {ex.Message}", ex);
             }
-
-            return appSettings.AppName;
         }
 
         public static string Version()
         {
-            if (_configuration == null)
+            try
             {
-                throw new InvalidOperationException("Configuration is not initialized.");
+                var appSettings = _configuration.GetSection("ApplicationSettings").Get<ApplicationSettings>();
+
+                if (appSettings == null || string.IsNullOrEmpty(appSettings.Version))
+                {
+                    throw new InvalidOperationException("ApplicationSettings section or Version is missing or empty in AppSettings.json.");
+                }
+
+                return appSettings.Version;
             }
-
-            var appSettings = _configuration.GetSection("ApplicationSettings").Get<ApplicationSettings>();
-
-            if (appSettings == null || string.IsNullOrEmpty(appSettings.Version))
+            catch (Exception ex)
             {
-                throw new InvalidOperationException("ApplicationSettings section or Version is missing or empty in AppSettings.json.");
+                throw new InvalidOperationException($"Failed to get Version. Error: {ex.Message}", ex);
             }
-
-            return appSettings.Version;
         }
 
         public static string Environment()
         {
-            if (_configuration == null)
+            try
             {
-                throw new InvalidOperationException("Configuration is not initialized.");
+                var appSettings = _configuration.GetSection("ApplicationSettings").Get<ApplicationSettings>();
+
+                if (appSettings == null || string.IsNullOrEmpty(appSettings.Environment))
+                {
+                    throw new InvalidOperationException("ApplicationSettings section or Environment is missing or empty in AppSettings.json.");
+                }
+
+                return appSettings.Environment;
             }
-
-            // Bind the ApplicationSettings section to the ApplicationSettings class
-            var appSettings = _configuration.GetSection("ApplicationSettings").Get<ApplicationSettings>();
-
-            if (appSettings == null || string.IsNullOrEmpty(appSettings.Environment))
+            catch (Exception ex)
             {
-                throw new InvalidOperationException("ApplicationSettings section or Environment is missing or empty in AppSettings.json.");
+                throw new InvalidOperationException($"Failed to get Environment. Error: {ex.Message}", ex);
             }
-
-            return appSettings.Environment;
         }
-
     }
 
     internal class ApplicationSettings
     {
-        public string? AppName { get; set; }
-        public string? Version { get; set; }
-        public string? Environment { get; set; }
+        public string AppName { get; set; }
+        public string Version { get; set; }
+        public string Environment { get; set; }
     }
-
 }

@@ -1,46 +1,308 @@
-using System;
+using System.Text;
+using Utilities;
 
 namespace CodeGenerator_Business
 {
-    public class BlGenerator
+    public static class clsBlGenerator
     {
-        public static void GenerateBlCode(string TableName)
-        {
-            string blCode = $@"
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+        private static string _TableName;
+        private static List<clsDatabase.ColumnInfo> _columns;
 
-namespace Inventory_Business.BusinessLogic
+        #region Properties
+
+        private static string TableName
+        {
+            get
+            {
+                return _TableName;
+            }
+            set
+            {
+                if (_TableName != value)
+                {
+                    _TableName = value;
+                    clsDatabase.Initialize(clsDataAccessSettings.ConnectionString());
+                    _columns = clsDatabase.GetTableColumns(_TableName);
+                }
+            }
+        }
+
+        private static string _FormattedTNSingle
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_TableName))
+                {
+                    return null;
+                }
+
+                string singularized = clsFormat.Singularize(_TableName) ?? string.Empty;
+                return clsFormat.CapitalizeFirstChars(singularized);
+            }
+        }
+
+        private static string _FormattedTNPluralize
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_TableName))
+                {
+                    return null;
+                }
+
+                string pluralized = clsFormat.Pluralize(_TableName) ?? string.Empty;
+                return clsFormat.CapitalizeFirstChars(pluralized);
+            }
+        }
+
+        private static string _FormattedTNSingleVar
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_TableName))
+                {
+                    return null;
+                }
+
+                string singularized = clsFormat.Singularize(_TableName) ?? string.Empty;
+                string capitalized = clsFormat.CapitalizeFirstChars(singularized);
+                return clsFormat.SmalizeFirstChar(capitalized);
+            }
+        }
+
+        private static string _FormattedTNPluralizeVar
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_TableName))
+                {
+                    return null;
+                }
+
+                string pluralized = clsFormat.Pluralize(_TableName) ?? string.Empty;
+                string capitalized = clsFormat.CapitalizeFirstChars(pluralized);
+                return clsFormat.SmalizeFirstChar(capitalized);
+            }
+        }
+
+        #endregion
+
+        #region Support Methods
+
+        private static string Properties()
+        {
+            var sb = new StringBuilder();
+
+            foreach (var column in _columns)
+            {
+                string csharpType = clsUtil.ConvertDbTypeToCSharpType(column.DataType);
+                string nullableSymbol = column.IsNullable ? "?" : "";
+                string propertyName = clsFormat.CapitalizeFirstChars(clsFormat.FormatId(column.Name));
+
+                sb.AppendLine($"        public {csharpType}{nullableSymbol} {propertyName}");
+                sb.AppendLine("        {");
+                sb.AppendLine("            get;");
+                sb.AppendLine("            set;");
+                sb.AppendLine("        }");
+                sb.AppendLine();
+            }
+
+            return sb.ToString();
+        }
+
+        private static string GenerateConstructorParameters()
+        {
+            var parameters = new List<string>();
+
+            foreach (var column in _columns)
+            {
+                string csharpType = clsUtil.ConvertDbTypeToCSharpType(column.DataType);
+                string nullableSymbol = column.IsNullable ? "?" : "";
+                string parameterName = clsFormat.CapitalizeFirstChars(clsFormat.FormatId(column.Name));
+
+                parameters.Add($"{csharpType}{nullableSymbol} {parameterName}");
+            }
+
+            return string.Join(", ", parameters);
+        }
+
+        private static string GenerateConstructorAssignments()
+        {
+            var sb = new StringBuilder();
+
+            foreach (var column in _columns)
+            {
+                string propertyName = clsFormat.CapitalizeFirstChars(clsFormat.FormatId(column.Name));
+                sb.AppendLine($"            this.{propertyName} = {propertyName};");
+            }
+
+            return sb.ToString();
+        }
+
+        private static string GenerateDefaultValues()
+        {
+            var sb = new StringBuilder();
+
+            foreach (var column in _columns)
+            {
+                string propertyName = clsFormat.CapitalizeFirstChars(clsFormat.FormatId(column.Name));
+                string defaultValue = GetDefaultValueForType(column.DataType, column.IsNullable);
+
+                sb.AppendLine($"            this.{propertyName} = {defaultValue};");
+            }
+
+            return sb.ToString();
+        }
+
+        private static string GetDefaultValueForType(string dbType, bool isNullable)
+        {
+            string csharpType = clsUtil.ConvertDbTypeToCSharpType(dbType);
+
+            if (isNullable)
+                return "null";
+
+            switch (csharpType)
+            {
+                case "int":
+                case "short":
+                case "long":
+                case "byte":
+                    return "-1";
+                case "string":
+                    return "string.Empty";
+                case "bool":
+                    return "false";
+                case "DateTime":
+                    return "DateTime.MinValue";
+                case "decimal":
+                case "double":
+                case "float":
+                    return "0";
+                default:
+                    return "null";
+            }
+        }
+
+        private static string GenerateFindMethodTupleDeconstruction()
+        {
+            var sb = new StringBuilder();
+            sb.Append("var (");
+
+            bool first = true;
+            foreach (var column in _columns)
+            {
+                if (!first)
+                    sb.Append(", ");
+
+                string propertyName = clsFormat.CapitalizeFirstChars(clsFormat.FormatId(column.Name));
+                sb.Append(propertyName);
+                first = false;
+            }
+
+            sb.Append(") = info.Value;");
+            return sb.ToString();
+        }
+
+        private static string GenerateFindMethodReturnNew()
+        {
+            var sb = new StringBuilder();
+            sb.Append($"return new cls{_FormattedTNSingle}(");
+
+            bool first = true;
+            foreach (var column in _columns)
+            {
+                if (!first)
+                    sb.Append(", ");
+
+                string propertyName = clsFormat.CapitalizeFirstChars(clsFormat.FormatId(column.Name));
+                sb.Append(propertyName);
+                first = false;
+            }
+
+            sb.Append(");");
+            return sb.ToString();
+        }
+
+        private static string GenerateMappingFromDalEntity()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"                {_FormattedTNSingleVar} => new cls{_FormattedTNSingle}");
+            sb.AppendLine("                {");
+
+            foreach (var column in _columns)
+            {
+                string propertyName = clsFormat.CapitalizeFirstChars(clsFormat.FormatId(column.Name));
+                string sourceProperty = column.IsNullable ? $"{_FormattedTNSingleVar}.{propertyName} ?? {GetDefaultValueForType(column.DataType, false)}"
+                                                         : $"{_FormattedTNSingleVar}.{propertyName}";
+
+                sb.AppendLine($"                    {propertyName} = {sourceProperty},");
+            }
+
+            sb.AppendLine("                }).ToList();");
+            return sb.ToString();
+        }
+
+        #endregion
+
+        #region Class Structure
+
+        private static string TopUsing()
+        {
+            string appName = clsDataAccessSettings.AppName();
+            return $@"using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using {appName}_DataAccess.DataAccess;
+using {appName}_DataAccess.Entities;
+using Utilities;
+
+namespace {appName}_Business.BusinessLogic
 {{
-    public class cls{TableName} : {TableName}
-    {{
-        public enum enMode
+    public partial class cls{_FormattedTNSingle}
+    {{";
+        }
+
+        private static string ModeEnum()
+        {
+            return $@"        public enum enMode
         {{
             AddNew = 0,
             Update = 1
         }};
 
         public enMode Mode = enMode.AddNew;
+";
+        }
 
-        public cls{TableName}()
+        private static string DefaultConstructor()
+        {
+            return $@"        public cls{_FormattedTNSingle}()
         {{
-            this.{TableName}Id = -1;
+{GenerateDefaultValues()}
             Mode = enMode.AddNew;
         }}
+";
+        }
 
-        private cls{TableName}({TableName} {TableName.ToLower()})
+        private static string ParameterizedConstructor()
+        {
+            return $@"        private cls{_FormattedTNSingle}({GenerateConstructorParameters()})
         {{
-            this.{TableName}Id = {TableName.ToLower()}.{TableName}Id;
+{GenerateConstructorAssignments()}
             Mode = enMode.Update;
         }}
+";
+        }
 
-        private async Task<bool> _AddNew{TableName}Async()
+        private static string AddNewMethod()
+        {
+            return $@"        private async Task<bool> _AddNew{_FormattedTNSingle}Async()
         {{
             try
             {{
-                this.{TableName}Id = await cls{TableName}Data.AddNew{TableName}Async(this);
-                return this.{TableName}Id != -1;
+                this.{_FormattedTNSingle}Id = await cls{_FormattedTNSingle}Data.AddNew{_FormattedTNSingle}Async({GenerateAddNewParameters()});
+                return this.{_FormattedTNSingle}Id != -1;
             }}
             catch (Exception ex)
             {{
@@ -48,12 +310,32 @@ namespace Inventory_Business.BusinessLogic
                 return false;
             }}
         }}
+";
+        }
 
-        private async Task<bool> _Update{TableName}Async()
+        private static string GenerateAddNewParameters()
+        {
+            var parameters = new List<string>();
+
+            foreach (var column in _columns)
+            {
+                if (column.IsIdentity)
+                    continue;
+
+                string propertyName = clsFormat.CapitalizeFirstChars(clsFormat.FormatId(column.Name));
+                parameters.Add($"this.{propertyName}");
+            }
+
+            return string.Join(", ", parameters);
+        }
+
+        private static string UpdateMethod()
+        {
+            return $@"        private async Task<bool> _Update{_FormattedTNSingle}Async()
         {{
             try
             {{
-                return await cls{TableName}Data.Update{TableName}Async(this);
+                return await cls{_FormattedTNSingle}Data.Update{_FormattedTNSingle}Async({GenerateUpdateParameters()});
             }}
             catch (Exception ex)
             {{
@@ -61,32 +343,65 @@ namespace Inventory_Business.BusinessLogic
                 return false;
             }}
         }}
+";
+        }
 
-        public static async Task<cls{TableName}?> FindAsync(int {TableName.ToLower()}Id)
+        private static string GenerateUpdateParameters()
+        {
+            var parameters = new List<string>();
+
+            foreach (var column in _columns)
+            {
+                string propertyName = clsFormat.CapitalizeFirstChars(clsFormat.FormatId(column.Name));
+                parameters.Add($"this.{propertyName}");
+            }
+
+            return string.Join(", ", parameters);
+        }
+
+        private static string FindMethod()
+        {
+            return $@"        public static async Task<cls{_FormattedTNSingle}?> FindAsync(int {_FormattedTNSingleVar}Id)
         {{
-            {TableName}? {TableName.ToLower()} = await cls{TableName}Data.Get{TableName}InfoByIdAsync({TableName.ToLower()}Id);
-
-            if ({TableName.ToLower()} != null)
+            if ({_FormattedTNSingleVar}Id <= 0)
             {{
-                return new cls{TableName}({TableName.ToLower()});
+                return null;
             }}
-            else
+
+            try
             {{
+                var info = await cls{_FormattedTNSingle}Data.Get{_FormattedTNSingle}InfoByIdAsync({_FormattedTNSingleVar}Id);
+
+                if (info == null)
+                {{
+                    return null;
+                }}
+
+                {GenerateFindMethodTupleDeconstruction()}
+                {GenerateFindMethodReturnNew()}
+            }}
+            catch (Exception ex)
+            {{
+                clsUtil.ErrorLogger(ex);
                 return null;
             }}
         }}
 
-        public static cls{TableName}? Find(int {TableName.ToLower()}Id)
+        public static cls{_FormattedTNSingle}? Find(int {_FormattedTNSingleVar}Id)
         {{
-            return FindAsync({TableName.ToLower()}Id).GetAwaiter().GetResult();
+            return FindAsync({_FormattedTNSingleVar}Id).GetAwaiter().GetResult();
         }}
+";
+        }
 
-        public async Task<bool> SaveAsync()
+        private static string SaveMethod()
+        {
+            return $@"        public async Task<bool> SaveAsync()
         {{
             switch (Mode)
             {{
                 case enMode.AddNew:
-                    if (await _AddNew{TableName}Async())
+                    if (await _AddNew{_FormattedTNSingle}Async())
                     {{
                         Mode = enMode.Update;
                         return true;
@@ -97,7 +412,7 @@ namespace Inventory_Business.BusinessLogic
                     }}
                 case enMode.Update:
                     {{
-                        return await _Update{TableName}Async();
+                        return await _Update{_FormattedTNSingle}Async();
                     }}
             }}
             return false;
@@ -107,16 +422,21 @@ namespace Inventory_Business.BusinessLogic
         {{
             return SaveAsync().GetAwaiter().GetResult();
         }}
+";
+        }
 
-        public static async Task<List<cls{TableName}>> GetAll{TableName}sAsync()
+        private static string GetAllMethod()
+        {
+            return $@"        public static async Task<List<cls{_FormattedTNSingle}>> GetAll{_FormattedTNPluralize}Async(int pageNumber = 1, int pageSize = 50)
         {{
             try
             {{
-                List<{TableName}> {TableName.ToLower()}s = await cls{TableName}Data.GetAll{TableName}sAsync();
+                List<{_FormattedTNSingle}> {_FormattedTNPluralizeVar} = await cls{_FormattedTNSingle}Data.GetAll{_FormattedTNPluralize}Async(pageNumber, pageSize);
 
-                List<cls{TableName}> cls{TableName}s = {TableName.ToLower()}s.Select({TableName.ToLower()} => new cls{TableName}({TableName.ToLower()})).ToList();
+                List<cls{_FormattedTNSingle}> cls{_FormattedTNPluralize} = {_FormattedTNPluralizeVar}.Select(
+{GenerateMappingFromDalEntity()}
 
-                return cls{TableName}s;
+                return cls{_FormattedTNPluralize};
             }}
             catch (Exception ex)
             {{
@@ -125,35 +445,83 @@ namespace Inventory_Business.BusinessLogic
             }}
         }}
 
-        public static List<cls{TableName}> GetAll{TableName}s()
+        public static List<cls{_FormattedTNSingle}> GetAll{_FormattedTNPluralize}(int pageNumber = 1, int pageSize = 50)
         {{
-            return GetAll{TableName}sAsync().GetAwaiter().GetResult();
+            return GetAll{_FormattedTNPluralize}Async(pageNumber, pageSize).GetAwaiter().GetResult();
+        }}
+";
+        }
+
+        private static string DeleteMethod()
+        {
+            return $@"        public static async Task<bool> Delete{_FormattedTNSingle}Async(int {_FormattedTNSingleVar}Id)
+        {{
+            return await cls{_FormattedTNSingle}Data.Delete{_FormattedTNSingle}Async({_FormattedTNSingleVar}Id);
         }}
 
-        public static async Task<bool> Delete{TableName}Async(int {TableName.ToLower()}Id)
+        public static bool Delete{_FormattedTNSingle}(int {_FormattedTNSingleVar}Id)
         {{
-            return await cls{TableName}Data.Delete{TableName}Async({TableName.ToLower()}Id);
+            return Delete{_FormattedTNSingle}Async({_FormattedTNSingleVar}Id).GetAwaiter().GetResult();
+        }}
+";
+        }
+
+        private static string IsExistMethod()
+        {
+            return $@"        public static async Task<bool> Is{_FormattedTNSingle}ExistAsync(int {_FormattedTNSingleVar}Id)
+        {{
+            return await cls{_FormattedTNSingle}Data.Is{_FormattedTNSingle}ExistsAsync({_FormattedTNSingleVar}Id);
         }}
 
-        public static bool Delete{TableName}(int {TableName.ToLower()}Id)
+        public static bool Is{_FormattedTNSingle}Exist(int {_FormattedTNSingleVar}Id)
         {{
-            return Delete{TableName}Async({TableName.ToLower()}Id).GetAwaiter().GetResult();
+            return Is{_FormattedTNSingle}ExistAsync({_FormattedTNSingleVar}Id).GetAwaiter().GetResult();
         }}
+";
+        }
 
-        public static async Task<bool> Is{TableName}ExistAsync(int {TableName.ToLower()}Id)
-        {{
-            return await cls{TableName}Data.Is{TableName}ExistsAsync({TableName.ToLower()}Id);
-        }}
-
-        public static bool Is{TableName}Exist(int {TableName.ToLower()}Id)
-        {{
-            return Is{TableName}ExistAsync({TableName.ToLower()}Id).GetAwaiter().GetResult();
-        }}
-    }}
+        private static string Closing()
+        {
+            return $@"    }}
 }}";
+        }
 
-            string filePath = Path.Combine("C:\\Users\\yousef\\Desktop\\Code Generator\\", $"cls{TableName}.cs");
-            File.WriteAllText(filePath, blCode);
+        #endregion
+
+        public static bool GenerateBlCode(string tableName, string? folderPath = null)
+        {
+            if (tableName == null)
+            {
+                return false;
+            }
+            else
+            {
+                TableName = tableName;
+            }
+
+            if (string.IsNullOrEmpty(folderPath))
+            {
+                folderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Code Generator\\BusinessLogic\\");
+            }
+
+            StringBuilder blCode = new StringBuilder();
+
+            blCode.Append(TopUsing());
+            blCode.Append(ModeEnum());
+            blCode.Append(Properties());
+            blCode.Append(DefaultConstructor());
+            blCode.Append(ParameterizedConstructor());
+            blCode.Append(AddNewMethod());
+            blCode.Append(UpdateMethod());
+            blCode.Append(FindMethod());
+            blCode.Append(SaveMethod());
+            blCode.Append(GetAllMethod());
+            blCode.Append(DeleteMethod());
+            blCode.Append(IsExistMethod());
+            blCode.Append(Closing());
+
+            string fileName = $"cls{tableName}.cs";
+            return clsFile.StoreToFile(blCode.ToString(), fileName, folderPath, true);
         }
     }
 }
