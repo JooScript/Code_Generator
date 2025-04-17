@@ -61,8 +61,3 @@ This project is licensed under the MIT License. See `LICENSE` for details.
 ## Contributions
 
 Contributions are welcome. Please fork the repository and submit a pull request with your improvements or fixes.
-
-## Contact
-
-For questions or support, contact [yousefrefatcontact@gmail.com]
-(mailto:yousefrefatcontact@gmail.com).
