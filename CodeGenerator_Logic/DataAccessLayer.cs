@@ -655,7 +655,7 @@ namespace {_AppName}_DataAccess.DataAccess
             dalCode.Append(Closing());
 
             string fileName = $"cls{_FormattedTNSingle}Data.cs";
-            return clsFile.StoreToFile(dalCode.ToString(), fileName, folderPath, true);
+            return clsFile.StoreToFile(dalCode.ToString(), fileName, folderPath, true); //&& CreateGeneralSP()
         }
 
         #endregion
@@ -679,26 +679,29 @@ namespace {_AppName}_DataAccess.DataAccess
                 throw new ArgumentNullException(nameof(_TableId));
             }
 
+            const string procedureNameTemplate = "SP_Is{0}Exists";
+            string procedureName = string.Format(procedureNameTemplate, _FormattedTNSingle);
+
             string procSql = $@"
-    IF NOT EXISTS (SELECT * FROM sys.objects 
-                  WHERE type = 'P' AND name = 'SP_Is{_FormattedTNSingle}Exists')
+IF NOT EXISTS (SELECT * FROM sys.objects 
+              WHERE type = 'P' AND name = '{procedureName}')
+BEGIN
+    EXEC('
+    USE [{_AppName}];
+    
+    CREATE PROCEDURE [dbo].[{procedureName}]
+        @{_TableId} INT
+    AS
     BEGIN
-        EXEC('
-        USE [{_AppName}];
+        SET NOCOUNT ON;
         
-        CREATE PROCEDURE [dbo].[SP_Is{_FormattedTNSingle}Exists]
-            @{_TableId} INT
-        AS
-        BEGIN
-            SET NOCOUNT ON;
-            
-            IF EXISTS(SELECT 1 FROM [{_TableName}] 
-                        WHERE [{_TableId}] = @{_TableId})
-                RETURN 1;
-            RETURN 0;
-        END
-        ');
-    END";
+        IF EXISTS(SELECT 1 FROM [{_TableName}] 
+                 WHERE [{_TableId}] = @{_TableId})
+            RETURN 1;
+        RETURN 0;
+    END
+    ');
+END";
 
             try
             {
@@ -706,92 +709,94 @@ namespace {_AppName}_DataAccess.DataAccess
                 using (var command = new SqlCommand(procSql, connection))
                 {
                     connection.Open();
-                    command.CommandTimeout = 30;
+                    command.CommandTimeout = clsDataAccessSettings.DefaultCommandTimeout;
                     command.ExecuteNonQuery();
 
-                    return clsDatabase.VerifyProcedureExists(connection, $"SP_Is{_FormattedTNSingle}Exists");
+                    return clsDatabase.VerifyProcedureExists(connection, procedureName);
                 }
             }
             catch (SqlException sqlEx)
             {
                 clsUtil.ErrorLogger(new Exception(
-                    $"Failed to create SP_Is{_FormattedTNSingle}Exists procedure. " +
-                    $"Database: {_AppName}, Table: {_TableName}, ID Column: {_TableId}", sqlEx));
+                    $"Failed to create {procedureName} procedure. " +
+                    $"Database: {_AppName}, Table: {_TableName}, ID Column: {_TableId}. " +
+                    $"SQL Error: {sqlEx.Message}", sqlEx));
                 return false;
             }
             catch (Exception ex)
             {
                 clsUtil.ErrorLogger(new Exception(
-                    $"Unexpected error creating SP_Is{_FormattedTNSingle}Exists procedure", ex));
+                    $"Unexpected error creating {procedureName} procedure. " +
+                    $"Database: {_AppName}, Table: {_TableName}", ex));
                 return false;
             }
         }
 
-        //        public static bool CreateCountSP()
-        //        {
-        //            if (string.IsNullOrWhiteSpace(_AppName))
-        //            {
-        //                throw new ArgumentNullException(nameof(_AppName));
-        //            }
+        public static bool CreateCountSP()
+        {
+            if (string.IsNullOrWhiteSpace(_AppName))
+            {
+                throw new ArgumentNullException(nameof(_AppName));
+            }
 
-        //            if (string.IsNullOrWhiteSpace(_TableName))
-        //            {
-        //                throw new ArgumentNullException(nameof(_TableName));
-        //            }
+            if (string.IsNullOrWhiteSpace(_TableName))
+            {
+                throw new ArgumentNullException(nameof(_TableName));
+            }
 
-        //            if (string.IsNullOrWhiteSpace(_TableId))
-        //            {
-        //                throw new ArgumentNullException(nameof(_TableId));
-        //            }
+            const string procedureNameTemplate = "SP_{0}Count";
+            string procedureName = string.Format(procedureNameTemplate, _FormattedTNPluralize);
 
-        //            string procSql = $@"
-        //    IF NOT EXISTS (SELECT * FROM sys.objects 
-        //                  WHERE type = 'P' AND name = 'SP_Is{_FormattedTNSingle}Exists')
-        //    BEGIN
-        //        EXEC('
-        //        USE [{_AppName}];
+            string procSql = $@"
+IF NOT EXISTS (SELECT * FROM sys.objects 
+              WHERE type = 'P' AND name = '{procedureName}')
+BEGIN
+    EXEC('
+    USE [{_AppName}];
+    
+    CREATE PROCEDURE [dbo].[{procedureName}]
+    AS
+    BEGIN
+        SET NOCOUNT ON;
+        
+        SELECT COUNT(*) AS TotalCount FROM [{_TableName}];
+    END
+    ');
+END";
 
-        //        CREATE PROCEDURE [dbo].[SP_Is{_FormattedTNSingle}Exists]
-        //            @{_TableId} INT
-        //        AS
-        //        BEGIN
-        //            SET NOCOUNT ON;
+            try
+            {
+                using (var connection = new SqlConnection(clsDataAccessSettings.ConnectionString()))
+                using (var command = new SqlCommand(procSql, connection))
+                {
+                    connection.Open();
+                    command.CommandTimeout = clsDataAccessSettings.DefaultCommandTimeout;
+                    command.ExecuteNonQuery();
 
-        //            IF EXISTS(SELECT 1 FROM [{_TableName}] 
-        //                        WHERE [{_TableId}] = @{_TableId})
-        //                RETURN 1;
-        //            RETURN 0;
-        //        END
-        //        ');
-        //    END
-        //";
+                    return clsDatabase.VerifyProcedureExists(connection, procedureName);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                clsUtil.ErrorLogger(new Exception(
+                    $"Failed to create {procedureName} procedure. " +
+                    $"Database: {_AppName}, Table: {_TableName}. " +
+                    $"SQL Error: {sqlEx.Message}", sqlEx));
+                return false;
+            }
+            catch (Exception ex)
+            {
+                clsUtil.ErrorLogger(new Exception(
+                    $"Unexpected error creating {procedureName} procedure. " +
+                    $"Database: {_AppName}, Table: {_TableName}", ex));
+                return false;
+            }
+        }
 
-        //            try
-        //            {
-        //                using (var connection = new SqlConnection(clsDataAccessSettings.ConnectionString()))
-        //                using (var command = new SqlCommand(procSql, connection))
-        //                {
-        //                    connection.Open();
-        //                    command.CommandTimeout = 30;
-        //                    command.ExecuteNonQuery();
-
-        //                    return clsDatabase.VerifyProcedureExists(connection, $"SP_Is{_FormattedTNSingle}Exists");
-        //                }
-        //            }
-        //            catch (SqlException sqlEx)
-        //            {
-        //                clsUtil.ErrorLogger(new Exception(
-        //                    $"Failed to create SP_Is{_FormattedTNSingle}Exists procedure. " +
-        //                    $"Database: {_AppName}, Table: {_TableName}, ID Column: {_TableId}", sqlEx));
-        //                return false;
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                clsUtil.ErrorLogger(new Exception(
-        //                    $"Unexpected error creating SP_Is{_FormattedTNSingle}Exists procedure", ex));
-        //                return false;
-        //            }
-        //        }
+        public static bool CreateGeneralSP()
+        {
+            return CreateIsExistsSP() && CreateCountSP();
+        }
 
         #endregion
 

@@ -3,17 +3,11 @@
   "WorkspaceRootPath": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_ConsoleApp\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{AD0F2CCC-7F18-02E9-72B1-DDF084A5174D}|..\\..\\CS_Utilities\\C# Utilities\\Utilities.csproj|c:\\users\\yousef\\documents\\github\\cs_utilities\\c# utilities\\utilities\\clsdatabase.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{9BC790BF-FA30-479D-A488-C87055FA4726}|..\\CodeGenerator_Logic\\CodeGenerator_Logic.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\codegenerator_logic\\dataaccesslayer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{4FA8ECD8-E92E-4507-8CF0-3F90B3481E71}|..\\CodeGenerator_Logic\\CodeGenerator_Logic.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\codegenerator_logic\\dataaccesslayer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{4C80F3A9-F29C-4863-820F-A2D251F5C45A}|CodeGenerator_ConsoleApp.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\codegenerator_consoleapp\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{4C80F3A9-F29C-4863-820F-A2D251F5C45A}|CodeGenerator_ConsoleApp.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{4FA8ECD8-E92E-4507-8CF0-3F90B3481E71}|..\\CodeGenerator_Logic\\CodeGenerator_Logic.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\codegenerator_logic\\businesslogiclayer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{0137B1AD-C60B-4C67-AC97-620431DC8640}|CodeGenerator_ConsoleApp.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\codegenerator_consoleapp\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0137B1AD-C60B-4C67-AC97-620431DC8640}|CodeGenerator_ConsoleApp.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -23,62 +17,36 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 1,
           "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "clsDatabase.cs",
-              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\CS_Utilities\\C# Utilities\\Utilities\\clsDatabase.cs",
-              "RelativeDocumentMoniker": "..\\..\\CS_Utilities\\C# Utilities\\Utilities\\clsDatabase.cs",
-              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\CS_Utilities\\C# Utilities\\Utilities\\clsDatabase.cs",
-              "RelativeToolTip": "..\\..\\CS_Utilities\\C# Utilities\\Utilities\\clsDatabase.cs",
-              "ViewState": "AgIAACQAAAAAAAAAAAAowP0AAAAfAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-30T17:21:17.036Z",
-              "EditorCaption": ""
-            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_ConsoleApp\\Program.cs",
-              "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_ConsoleApp\\Program.cs",
-              "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAADkAAAAbAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-30T17:03:15.818Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "DataAccessLayer.cs",
               "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Logic\\DataAccessLayer.cs",
               "RelativeDocumentMoniker": "..\\CodeGenerator_Logic\\DataAccessLayer.cs",
               "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Logic\\DataAccessLayer.cs",
               "RelativeToolTip": "..\\CodeGenerator_Logic\\DataAccessLayer.cs",
-              "ViewState": "AgIAAA4AAAAAAAAAAAAgwB0AAABIAAAAAAAAAA==",
+              "ViewState": "AgIAAIICAAAAAAAAAAAowJECAABuAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-30T16:12:16.562Z",
+              "WhenOpened": "2025-04-30T18:10:35.456Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "BusinessLogicLayer.cs",
-              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Logic\\BusinessLogicLayer.cs",
-              "RelativeDocumentMoniker": "..\\CodeGenerator_Logic\\BusinessLogicLayer.cs",
-              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Logic\\BusinessLogicLayer.cs",
-              "RelativeToolTip": "..\\CodeGenerator_Logic\\BusinessLogicLayer.cs",
-              "ViewState": "AgIAAAcAAAAAAAAAAAA1wB4AAAAJAAAAAAAAAA==",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_ConsoleApp\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_ConsoleApp\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADwAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-30T16:50:21.468Z",
+              "WhenOpened": "2025-04-30T18:04:35.652Z",
               "EditorCaption": ""
             }
           ]

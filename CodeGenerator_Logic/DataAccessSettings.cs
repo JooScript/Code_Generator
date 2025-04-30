@@ -14,6 +14,14 @@ namespace CodeGenerator_Logic
             }
         }
 
+        public static int DefaultCommandTimeout
+        {
+            get
+            {
+                return 30;
+            }
+        }
+
         static clsDataAccessSettings()
         {
             try
