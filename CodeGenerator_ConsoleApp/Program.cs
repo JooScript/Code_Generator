@@ -1,4 +1,4 @@
-﻿using CodeGenerator_BusinessLogic;
+﻿using CodeGenerator_Logic;
 using Utilities;
 
 namespace CodeGenerator_ConsoleApp

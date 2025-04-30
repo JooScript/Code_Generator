@@ -3,10 +3,14 @@
   "WorkspaceRootPath": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_ConsoleApp\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{625753B9-6B16-42F6-B160-9761F341C14C}|..\\CodeGenerator_Business\\CodeGenerator_Business.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\codegenerator_business\\businesslogiclayer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{4C80F3A9-F29C-4863-820F-A2D251F5C45A}|CodeGenerator_ConsoleApp.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\codegenerator_consoleapp\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4C80F3A9-F29C-4863-820F-A2D251F5C45A}|CodeGenerator_ConsoleApp.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{625753B9-6B16-42F6-B160-9761F341C14C}|..\\CodeGenerator_Business\\CodeGenerator_Business.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\codegenerator_business\\dataaccesslayer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{4FA8ECD8-E92E-4507-8CF0-3F90B3481E71}|..\\CodeGenerator_Logic\\CodeGenerator_Logic.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\codegenerator_logic\\dataaccesslayer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4FA8ECD8-E92E-4507-8CF0-3F90B3481E71}|..\\CodeGenerator_Logic\\CodeGenerator_Logic.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\codegenerator_logic\\businesslogiclayer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -16,7 +20,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Bookmark",
@@ -26,26 +30,39 @@
               "$type": "Document",
               "DocumentIndex": 1,
               "Title": "DataAccessLayer.cs",
-              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Business\\DataAccessLayer.cs",
-              "RelativeDocumentMoniker": "..\\CodeGenerator_Business\\DataAccessLayer.cs",
-              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Business\\DataAccessLayer.cs",
-              "RelativeToolTip": "..\\CodeGenerator_Business\\DataAccessLayer.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAQwAUCAAAaAAAAAAAAAA==",
+              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Logic\\DataAccessLayer.cs",
+              "RelativeDocumentMoniker": "..\\CodeGenerator_Logic\\DataAccessLayer.cs",
+              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Logic\\DataAccessLayer.cs",
+              "RelativeToolTip": "..\\CodeGenerator_Logic\\DataAccessLayer.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACAAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-16T16:08:32.125Z",
+              "WhenOpened": "2025-04-30T16:12:16.562Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "BusinessLogicLayer.cs",
+              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Logic\\BusinessLogicLayer.cs",
+              "RelativeDocumentMoniker": "..\\CodeGenerator_Logic\\BusinessLogicLayer.cs",
+              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Logic\\BusinessLogicLayer.cs",
+              "RelativeToolTip": "..\\CodeGenerator_Logic\\BusinessLogicLayer.cs",
+              "ViewState": "AgIAAAcAAAAAAAAAAAA1wB4AAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-30T16:50:21.468Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "BusinessLogicLayer.cs",
-              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Business\\BusinessLogicLayer.cs",
-              "RelativeDocumentMoniker": "..\\CodeGenerator_Business\\BusinessLogicLayer.cs",
-              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Business\\BusinessLogicLayer.cs",
-              "RelativeToolTip": "..\\CodeGenerator_Business\\BusinessLogicLayer.cs",
-              "ViewState": "AgIAAAwAAAAAAAAAAAAgwBUCAABmAAAAAAAAAA==",
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_ConsoleApp\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_ConsoleApp\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADkAAAAbAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-16T16:08:17.068Z",
+              "WhenOpened": "2025-04-30T17:03:15.818Z",
               "EditorCaption": ""
             }
           ]

@@ -9,7 +9,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\CS_Utilities\C# Utilities\Utilities.csproj" />
-		<ProjectReference Include="..\CodeGenerator_Business\CodeGenerator_Business.csproj" />
+		<ProjectReference Include="..\CodeGenerator_Logic\CodeGenerator_Logic.csproj" />
 	</ItemGroup>
 
 </Project>
