@@ -1,11 +1,12 @@
 ﻿using CodeGenerator_Logic;
 using Utilities;
+using static CodeGenerator_Logic.clsGenrator;
 
 namespace CodeGenerator_ConsoleApp
 {
     internal class Program
     {
-        public static void GenerateCode()
+        public static void GenerateCode(enCodeStyle codeStyle = enCodeStyle.AdoStyle)
         {
             try
             {
@@ -25,15 +26,17 @@ namespace CodeGenerator_ConsoleApp
 
                 foreach (string table in tables)
                 {
-                    bool dalSuccess = clsDaGenerator.GenerateDalCode(table);
+                    bool dalSuccess = clsDaGenerator.GenerateDalCode(table, codeStyle);
                     bool blSuccess = clsBlGenerator.GenerateBlCode(table);
+                    bool IlSuccess = clsIlGenerator.GenerateControllerCode(table);
 
-                    if (!dalSuccess || !blSuccess)
+                    if (!dalSuccess || !blSuccess || !IlSuccess)
                     {
                         throw new Exception(
                             $"Code generation failed for table '{table}'. " +
                             $"{(dalSuccess ? "" : "DAL generation failed. ")}" +
-                            $"{(blSuccess ? "" : "BL generation failed.")}");
+                            $"{(blSuccess ? "" : "BL generation failed.")}" +
+                            $"{(IlSuccess ? "" : "IL generation failed.")}");
                     }
                 }
 
@@ -57,5 +60,6 @@ namespace CodeGenerator_ConsoleApp
         {
             GenerateCode();
         }
+
     }
 }

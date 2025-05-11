@@ -3,7 +3,19 @@
   "WorkspaceRootPath": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_ConsoleApp\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{9BC790BF-FA30-479D-A488-C87055FA4726}|..\\CodeGenerator_Logic\\CodeGenerator_Logic.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\codegenerator_logic\\dataaccesslayer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{9BC790BF-FA30-479D-A488-C87055FA4726}|..\\CodeGenerator_Logic\\CodeGenerator_Logic.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\codegenerator_logic\\clsdagenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BC790BF-FA30-479D-A488-C87055FA4726}|..\\CodeGenerator_Logic\\CodeGenerator_Logic.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\codegenerator_logic\\clsgenrator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BC790BF-FA30-479D-A488-C87055FA4726}|..\\CodeGenerator_Logic\\CodeGenerator_Logic.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\codegenerator_logic\\clsilgenrator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BC790BF-FA30-479D-A488-C87055FA4726}|..\\CodeGenerator_Logic\\CodeGenerator_Logic.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\codegenerator_logic\\clsblgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AD0F2CCC-7F18-02E9-72B1-DDF084A5174D}|..\\..\\CS_Utilities\\C# Utilities\\Utilities.csproj|c:\\users\\yousef\\documents\\github\\cs_utilities\\c# utilities\\utilities\\clsutil.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{0137B1AD-C60B-4C67-AC97-620431DC8640}|CodeGenerator_ConsoleApp.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\codegenerator_consoleapp\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -17,7 +29,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
@@ -25,26 +37,78 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "DataAccessLayer.cs",
-              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Logic\\DataAccessLayer.cs",
-              "RelativeDocumentMoniker": "..\\CodeGenerator_Logic\\DataAccessLayer.cs",
-              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Logic\\DataAccessLayer.cs",
-              "RelativeToolTip": "..\\CodeGenerator_Logic\\DataAccessLayer.cs",
-              "ViewState": "AgIAAIICAAAAAAAAAAAowJECAABuAAAAAAAAAA==",
+              "DocumentIndex": 1,
+              "Title": "clsGenrator.cs",
+              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Logic\\clsGenrator.cs",
+              "RelativeDocumentMoniker": "..\\CodeGenerator_Logic\\clsGenrator.cs",
+              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Logic\\clsGenrator.cs",
+              "RelativeToolTip": "..\\CodeGenerator_Logic\\clsGenrator.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAF0AAABNAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-30T18:10:35.456Z",
+              "WhenOpened": "2025-05-11T02:43:44.868Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
+              "Title": "clsDaGenerator.cs",
+              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Logic\\clsDaGenerator.cs",
+              "RelativeDocumentMoniker": "..\\CodeGenerator_Logic\\clsDaGenerator.cs",
+              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Logic\\clsDaGenerator.cs",
+              "RelativeToolTip": "..\\CodeGenerator_Logic\\clsDaGenerator.cs",
+              "ViewState": "AgIAADsGAAAAAAAAAAAvwDoGAAAeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-11T02:42:44.137Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "clsUtil.cs",
+              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\CS_Utilities\\C# Utilities\\Utilities\\clsUtil.cs",
+              "RelativeDocumentMoniker": "..\\..\\CS_Utilities\\C# Utilities\\Utilities\\clsUtil.cs",
+              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\CS_Utilities\\C# Utilities\\Utilities\\clsUtil.cs",
+              "RelativeToolTip": "..\\..\\CS_Utilities\\C# Utilities\\Utilities\\clsUtil.cs",
+              "ViewState": "AgIAACkAAAAAAAAAAAAnwDgAAAAkAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-11T01:45:19.467Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "clsBlGenerator.cs",
+              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Logic\\clsBlGenerator.cs",
+              "RelativeDocumentMoniker": "..\\CodeGenerator_Logic\\clsBlGenerator.cs",
+              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Logic\\clsBlGenerator.cs",
+              "RelativeToolTip": "..\\CodeGenerator_Logic\\clsBlGenerator.cs",
+              "ViewState": "AgIAAC4AAAAAAAAAAAAgwCwAAABwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-11T01:32:34.186Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "clsIlGenrator.cs",
+              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Logic\\clsIlGenrator.cs",
+              "RelativeDocumentMoniker": "..\\CodeGenerator_Logic\\clsIlGenrator.cs",
+              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Logic\\clsIlGenrator.cs",
+              "RelativeToolTip": "..\\CodeGenerator_Logic\\clsIlGenrator.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUBAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-11T00:41:18.418Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_ConsoleApp\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
               "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_ConsoleApp\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAADwAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-04-30T18:04:35.652Z",
               "EditorCaption": ""

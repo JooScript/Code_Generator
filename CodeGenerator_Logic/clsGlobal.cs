@@ -2,7 +2,7 @@
 {
     public class clsGlobal
     {
-        public static string FormatId(string? input)
+        public static string FormatId(string? input, bool smallD = true)
         {
             if (input == null)
             {
@@ -18,8 +18,8 @@
             {
                 char[] chars = input.ToCharArray();
 
-                chars[^2] = 'I'; // Using index from end operator (C# 8.0+)
-                chars[^1] = 'd';
+                chars[^2] = 'I';
+                chars[^1] = smallD ? 'd' : 'D';
 
                 return new string(chars);
             }
