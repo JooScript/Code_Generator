@@ -36,19 +36,12 @@ namespace CodeGenerator_Logic
                     string colName = propertyName.Substring(0, propertyName.Length - 2);
                     string className = GetClassNameFromColumnName(propertyName);
 
-                    if (column.IsNullable)
-                    {
-                        sb.AppendLine($"            this.{colName}Info = cls{className}.Find({propertyName}.Value).DTO;");
-                    }
-                    else
-                    {
-                        sb.AppendLine($"            this.{colName}Info = cls{className}.Find({propertyName}).DTO;");
-                    }
+                    sb.AppendLine($"            this.{colName}Info = cls{className}.Find({FormattedTNSingleVar}DTO.{propertyName});");
                 }
             }
 
             sb.AppendLine();
-            sb.AppendLine("            Mode = cMode;");
+            sb.Append("            Mode = cMode;");
 
             return sb.ToString();
         }
@@ -96,10 +89,13 @@ namespace {AppName}_Business.BusinessLogic
             foreach (var column in columns)
             {
                 if (!first)
+                {
                     sb.Append(", ");
+                }
+                first = false;
 
                 sb.Append($"this.{clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name))}");
-                first = false;
+
             }
 
             sb.AppendLine("));");
@@ -127,11 +123,15 @@ namespace {AppName}_Business.BusinessLogic
                 sb.AppendLine("        }");
                 sb.AppendLine();
 
-                if (column.IsForeignKey && !column.IsNullable)
+                if (column.IsForeignKey)
                 {
                     string colName = propertyName.Substring(0, propertyName.Length - 2);
                     string className = GetClassNameFromColumnName(propertyName);
-                    sb.AppendLine($"        public {className}DTO {colName}Info;");
+                    sb.AppendLine($"        public cls{className} {colName}Info");
+                    sb.AppendLine("        {");
+                    sb.AppendLine("            get;");
+                    sb.AppendLine("            set;");
+                    sb.AppendLine("        }");
                     sb.AppendLine();
                 }
             }
@@ -153,7 +153,7 @@ namespace {AppName}_Business.BusinessLogic
         {
             return $@"        public static async Task<cls{FormattedTNSingle}> FindAsync(int {TableId})
         {{
-            if ({TableId} <= 0)
+            if ({TableId} <= 0 || {TableId} == null)
             {{
                 return null;
             }}
@@ -178,7 +178,9 @@ namespace {AppName}_Business.BusinessLogic
             return $@"        public static async Task<cls{FormattedTNSingle}> FindByUsernameAndPasswordAsync(string username, string password)
         {{
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
-                return null;
+             {{ 
+return null;
+}}
 
             try
             {{
@@ -255,8 +257,7 @@ namespace {AppName}_Business.BusinessLogic
             }
 
             return $@"        private async Task<bool> _AddNew{FormattedTNSingle}Async()
-        {{
-{PasswordValidatation}
+        {{{PasswordValidatation}
             try
             {{
                 this.{TableId} = await cls{FormattedTNSingle}Data.Add{FormattedTNSingle}Async(DTO);
@@ -286,8 +287,7 @@ namespace {AppName}_Business.BusinessLogic
             }
 
             return $@"        private async Task<bool> _Update{FormattedTNSingle}Async()
-        {{
-{PasswordValidatation}
+        {{{PasswordValidatation}
             try
             {{
                 return await cls{FormattedTNSingle}Data.Update{FormattedTNSingle}Async(DTO);

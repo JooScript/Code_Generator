@@ -47,8 +47,7 @@ namespace CodeGenerator_Logic
         {
             return $@"        public {FormattedTNSingle}DTO({ConstructorParameters()})
         {{
-{ConstructorAssignments()}
-        }}
+{ConstructorAssignments()}}}
 
 ";
         }
@@ -77,13 +76,6 @@ namespace CodeGenerator_Logic
                 sb.AppendLine("            set;");
                 sb.AppendLine("        }");
                 sb.AppendLine();
-                if (column.IsForeignKey && !column.IsNullable)
-                {
-                    string colName = propertyName.Substring(0, propertyName.Length - 2);
-                    string className = GetClassNameFromColumnName(propertyName);
-                    sb.AppendLine($"public {className}DTO {colName}Info;");
-                    sb.AppendLine();
-                }
             }
 
             return sb.ToString();
@@ -105,7 +97,9 @@ namespace CodeGenerator_Logic
                 folderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"Code Generator\\{AppName}\\DTO\\");
             }
 
-            string TopUsing = $@"namespace {AppName}_Data.DTO
+            string TopUsing = $@"using {AppName}_Data.DataAccess;
+
+namespace {AppName}_Data.DTO
 {{
     public class {FormattedTNSingle}DTO
     {{";
@@ -447,574 +441,6 @@ END";
 
         #endregion
 
-        #region EF Code
-
-        #region EF Support Methods
-
-        #region For GetByID
-
-        private static string tResultsForGetByID()
-        {
-            var columnStrings = columns.Select(column =>
-            {
-                string dataType = clsUtil.ConvertDbTypeToCSharpType(column.DataType);
-                string isNullable = column.IsNullable ? "?" : string.Empty;
-                return $"{dataType}{isNullable} {clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name))}";
-            });
-
-            return string.Join(", ", columnStrings);
-        }
-
-        private static string InfoForGetByID()
-        {
-            if (columns == null || !columns.Any())
-            {
-                return string.Empty;
-            }
-
-            var resultBuilder = new StringBuilder();
-
-            foreach (var column in columns)
-            {
-                string formattedName = clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name));
-                string csharpType = clsUtil.ConvertDbTypeToCSharpType(column.DataType);
-
-                if (column.IsNullable)
-                {
-                    resultBuilder.AppendLine($"{formattedName} = x.{formattedName} != null ? x.{formattedName} : null,");
-                }
-                else
-                {
-                    resultBuilder.AppendLine($"x.{formattedName},");
-                }
-            }
-
-            if (resultBuilder.Length > 0)
-            {
-                resultBuilder.Length -= Environment.NewLine.Length + 1;
-            }
-
-            return resultBuilder.ToString();
-        }
-
-        private static string returnsForGetByID()
-        {
-            if (columns == null || !columns.Any())
-            {
-                return string.Empty;
-            }
-
-            var resultBuilder = new StringBuilder();
-
-            foreach (var column in columns)
-            {
-                string formattedName = clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name));
-                resultBuilder.AppendLine($"{FormattedTNSingleVar.ToLower()}Info.{formattedName},");
-            }
-
-            if (resultBuilder.Length > 0)
-            {
-                resultBuilder.Length -= Environment.NewLine.Length + 1;
-            }
-
-            return resultBuilder.ToString();
-        }
-
-        #endregion
-
-        #region For AddNew
-
-        private static string ParamatersForAddNew()
-        {
-            var columnStrings = columns
-                .Where(column => !column.IsIdentity)
-                .Select(column =>
-                {
-                    string dataType = clsUtil.ConvertDbTypeToCSharpType(column.DataType);
-                    string isNullable = column.IsNullable ? "?" : string.Empty;
-                    return $"{dataType}{isNullable} {clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name))}";
-                });
-
-            return string.Join(", ", columnStrings);
-        }
-
-        private static string ObjectForAddNew()
-        {
-            if (columns == null || !columns.Any())
-            {
-                return string.Empty;
-            }
-
-            var resultBuilder = new StringBuilder();
-
-            foreach (var column in columns)
-            {
-                string formattedName = clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name));
-
-                if (column.IsPrimaryKey)
-                {
-                    continue;
-                }
-                if (formattedName.ToLower() == "password")
-                {
-                    resultBuilder.AppendLine($"{formattedName} = clsSecure.HashPassword({formattedName}),");
-                    continue;
-                }
-                resultBuilder.AppendLine($"{formattedName} = {formattedName},");
-            }
-
-            if (resultBuilder.Length > 0)
-            {
-                resultBuilder.Length -= Environment.NewLine.Length + 1;
-            }
-
-            return resultBuilder.ToString();
-        }
-
-        #endregion
-
-        #region For Update
-
-        private static string ParamatersForUpdate()
-        {
-            return $"int {TableId},{ParamatersForAddNew()}";
-        }
-
-        private static string ObjectForUpdate()
-        {
-            if (columns == null || !columns.Any())
-            {
-                return string.Empty;
-            }
-
-            var resultBuilder = new StringBuilder();
-            bool firstLine = true;
-
-            foreach (var column in columns)
-            {
-                if (column.IsPrimaryKey)
-                {
-                    continue;
-                }
-
-                string formattedName = clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name));
-
-                if (!firstLine)
-                {
-                    resultBuilder.AppendLine();
-                }
-                else
-                {
-                    firstLine = false;
-                }
-
-                if (formattedName.ToLower() == "password")
-                {
-                    resultBuilder.Append($"existing{FormattedTNSingle}.{formattedName} = clsSecure.HashPassword({formattedName});");
-                    continue;
-                }
-
-                resultBuilder.Append($"existing{FormattedTNSingle}.{formattedName} = {formattedName};");
-            }
-
-            return resultBuilder.ToString();
-        }
-
-        #endregion
-
-        #endregion
-
-        #region EF Class Structure
-
-        private static string EFTopUsing()
-        {
-            return
-$@"using {AppName}_Data.Data;
-using {AppName}_Data.Entities;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using Utilities;
-
-namespace {AppName}_Data.DataAccess
-{{
-    public partial class cls{FormattedTNSingle}Data
-    {{";
-        }
-
-        private static string EFGetAllMethod()
-        {
-            return $@"public static async Task<List<{FormattedTNSingle}>> GetAll{FormattedTNPluralize}Async(int pageNumber = 1, int pageSize = 50)
-        {{
-            try
-            {{
-                await using var context = new AppDbContext();
-                var query = context.{FormattedTNPluralize}.AsNoTracking();
-
-                var {FormattedTNPluralizeVar} = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync().ConfigureAwait(false);
-
-                return ({FormattedTNPluralizeVar});
-            }}
-            catch (Exception ex)
-            {{
-                clsUtil.ErrorLogger(ex);
-                throw;
-            }}
-        }}
-
-";
-        }
-
-        private static string EFGetByIDMethod()
-        {
-            return $@"public static async Task<({tResultsForGetByID()})?> Get{FormattedTNSingle}InfoByIdAsync(int {TableId.ToLower()})
-{{
-    if ({TableId.ToLower()} <= 0)
-    {{
-        throw new ArgumentException(""{FormattedTNSingle} ID must be greater than 0."", nameof({TableId.ToLower()}));
-    }}
-
-    try
-    {{
-        await using var context = new AppDbContext();
-
-        var {FormattedTNSingleVar.ToLower()}Info = await context.{FormattedTNPluralize}
-            .Where(x => x.{TableId} == {TableId.ToLower()})
-            .Select(x => new
-            {{
-                {InfoForGetByID()}             
-            }})
-            .AsNoTracking()
-            .SingleOrDefaultAsync()
-            .ConfigureAwait(false);
-
-        if ({FormattedTNSingleVar.ToLower()}Info == null)
-        {{
-            return null;
-        }}
-
-        return (
-{returnsForGetByID()}
-);
-    }}
-    catch (Exception ex)
-    {{
-        clsUtil.ErrorLogger(ex);
-        throw;
-    }}
-}}
-
-";
-        }
-
-        private static string EFGetByUsernameAndPasswordMethod()
-        {
-            return $@"public static async Task<({tResultsForGetByID()})?> Get{FormattedTNSingle}InfoByUsernameAndPasswordAsync(string username, string password)
-{{
-         if (string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(username))
-            {{
-                throw new ArgumentException(""Username and Password must be declared."");
-            }}
-
-    try
-    {{
-        await using var context = new AppDbContext();
-
-        var {FormattedTNSingleVar.ToLower()}Info = await context.{FormattedTNPluralize}.Where(x => x.Username == username && clsSecure.VerifyPassword(password, x.Password))
-            .Select(x => new
-            {{
-                {InfoForGetByID()}             
-            }})
-            .AsNoTracking()
-            .SingleOrDefaultAsync()
-            .ConfigureAwait(false);
-
-        if ({FormattedTNSingleVar.ToLower()}Info == null)
-        {{
-            return null;
-        }}
-
-        return (
-{returnsForGetByID()}
-);
-    }}
-    catch (Exception ex)
-    {{
-        clsUtil.ErrorLogger(ex);
-        throw;
-    }}
-}}
-
-";
-        }
-
-        private static string EFGetByPersonIDMethod()
-        {
-            return $@"public static async Task<({tResultsForGetByID()})?> Get{FormattedTNSingle}InfoByPersonIdAsync(int personid)
-{{
-    if (personid <= 0)
-    {{
-        throw new ArgumentException(""Person ID must be greater than 0."", nameof(personid));
-    }}
-
-    try
-    {{
-        await using var context = new AppDbContext();
-
-        var {FormattedTNSingleVar.ToLower()}Info = await context.{FormattedTNPluralize}
-            .Where(x => x.PersonId == personid)
-            .Select(x => new
-            {{
-                {InfoForGetByID()}             
-            }})
-            .AsNoTracking()
-            .SingleOrDefaultAsync()
-            .ConfigureAwait(false);
-
-        if ({FormattedTNSingleVar.ToLower()}Info == null)
-        {{
-            return null;
-        }}
-
-        return (
-{returnsForGetByID()}
-);
-    }}
-    catch (Exception ex)
-    {{
-        clsUtil.ErrorLogger(ex);
-        throw;
-    }}
-}}
-
-";
-        }
-
-        private static string EFAddNewMethod()
-        {
-            return $@"public static async Task<int> AddNew{FormattedTNSingle}Async({ParamatersForAddNew()})
-        {{
-            try
-            {{
-                {FormattedTNSingle} new{FormattedTNSingle} = new {FormattedTNSingle}
-                {{
-{ObjectForAddNew()}   
-                }};
-
-                await using var context = new AppDbContext();
-                await context.{FormattedTNPluralize}.AddAsync(new{FormattedTNSingle}).ConfigureAwait(false);
-                await context.SaveChangesAsync().ConfigureAwait(false);
-
-                return new{FormattedTNSingle}.{TableId};
-            }}
-            catch (Exception ex)
-            {{
-                clsUtil.ErrorLogger(ex);
-                return -1;
-            }}
-        }}
-
-";
-        }
-
-        private static string EFUpdateMethod()
-        {
-            return $@"public static async Task<bool> Update{FormattedTNSingle}Async({ParamatersForUpdate()})
-        {{
-            if ({TableId} <= 0)
-            {{
-                return false;
-            }}
-
-            try
-            {{
-                await using var context = new AppDbContext();
-                var existing{FormattedTNSingle} = await context.{FormattedTNPluralize}.SingleOrDefaultAsync(x => x.{TableId} == {TableId}).ConfigureAwait(false);
-
-                if (existing{FormattedTNSingle} == null)
-                {{
-                    return false;
-                }}
-
-{ObjectForUpdate()}               
-
-                await context.SaveChangesAsync().ConfigureAwait(false);
-                return true;
-            }}
-            catch (Exception ex)
-            {{
-                clsUtil.ErrorLogger(ex);
-                return false;
-            }}
-        }}
-
-";
-        }
-
-        private static string EFDeleteMethod()
-        {
-            return $@"public static async Task<bool> Delete{FormattedTNSingle}Async(int {TableId})
-        {{
-            if ({TableId} <= 0)
-            {{
-                return false;
-            }}
-
-            try
-            {{
-                await using var context = new AppDbContext();
-                {FormattedTNSingle}? {FormattedTNSingleVar} = await context.{FormattedTNPluralize}.SingleOrDefaultAsync(x => x.{TableId} == {TableId}).ConfigureAwait(false);
-
-                if ({FormattedTNSingleVar} == null)
-                {{
-                    return false;
-                }}
-
-                context.{FormattedTNPluralize}.Remove({FormattedTNSingleVar});
-                await context.SaveChangesAsync().ConfigureAwait(false);
-
-                return true;
-            }}
-            catch (Exception ex)
-            {{
-                clsUtil.ErrorLogger(ex);
-                return false;
-            }}
-        }}
-
-";
-        }
-
-        private static string EFIsExistMethod()
-        {
-            return $@"public static async Task<bool> Is{FormattedTNSingle}ExistsAsync(int {TableId})
-        {{
-            if ({TableId} <= 0)
-            {{
-                return false;
-            }}
-
-            const string sqlQuery = ""EXEC SP_Is{FormattedTNSingle}Exists @{TableId} = @{TableId}"";
-
-            try
-            {{
-                await using var context = new AppDbContext();
-                int result = await context.Database.SqlQueryRaw<int>(sqlQuery, new SqlParameter(""@{TableId}"", {TableId})).SingleOrDefaultAsync().ConfigureAwait(false);
-
-                return result == 1;
-            }}
-            catch (Exception ex)
-            {{
-                clsUtil.ErrorLogger(ex);
-                return false;
-            }}
-        }}
-
-";
-        }
-
-        private static string EFIsExistByUsernameMethod()
-        {
-            return $@"public static async Task<bool> Is{FormattedTNSingle}ExistsAsync(string UserName)
-        {{
-             if (string.IsNullOrWhiteSpace(UserName))
-            {{
-                return false;
-            }}
-
-  const string sqlQuery = ""EXEC SP_CheckUserExistsByUserName @UserName = @UserName"";
-
-            try
-            {{
-                await using var context = new AppDbContext();
-                int result = await context.Database.SqlQueryRaw<int>(sqlQuery, new SqlParameter(""@UserName"", UserName)).SingleOrDefaultAsync().ConfigureAwait(false);
-
-                return result == 1;
-            }}
-            catch (Exception ex)
-            {{
-                clsUtil.ErrorLogger(ex);
-                return false;
-            }}
-        }}
-
-";
-        }
-
-        private static string EFIsExistByPersonIdMethod()
-        {
-            return $@"public static async Task<bool> Is{FormattedTNSingle}ExistsByPersonIdAsync(int personId)
-        {{
-            if (personId <= 0)
-            {{
-                return false;
-            }}
-
-            const string sqlQuery = ""EXEC SP_CheckUserExistsByPersonID @personId = @personId"";
-
-            try
-            {{
-                await using var context = new AppDbContext();
-                int result = await context.Database.SqlQueryRaw<int>(sqlQuery, new SqlParameter(""@personId"", personId)).SingleOrDefaultAsync().ConfigureAwait(false);
-
-                return result == 1;
-            }}
-            catch (Exception ex)
-            {{
-                clsUtil.ErrorLogger(ex);
-                return false;
-            }}
-        }}
-
-";
-        }
-
-        private static string EFClosing()
-        {
-            return $@"}}}}";
-        }
-
-        #endregion
-
-        public static bool GenerateEFDalCode(string tableName, string? folderPath = null)
-        {
-            if (tableName == null)
-            {
-                return false;
-            }
-            else
-            {
-                TableName = tableName;
-            }
-
-            if (string.IsNullOrEmpty(folderPath))
-            {
-                folderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"Code Generator\\{AppName}\\DataAccess\\Basic\\");
-            }
-
-            StringBuilder dalCode = new StringBuilder();
-
-            dalCode.Append(EFTopUsing() + EFGetAllMethod() + EFGetByIDMethod());
-
-            if (clsFormat.Singularize(_TableName.ToLower()) == "user")
-            {
-                dalCode.Append(EFGetByPersonIDMethod() + EFGetByUsernameAndPasswordMethod());
-            }
-
-            dalCode.Append(EFAddNewMethod() + EFUpdateMethod() + EFDeleteMethod() + EFIsExistMethod());
-
-            if (clsFormat.Singularize(_TableName.ToLower()) == "user")
-            {
-                dalCode.Append(EFIsExistByUsernameMethod() + EFIsExistByPersonIdMethod());
-            }
-
-            dalCode.Append(EFClosing());
-
-            string fileName = $"cls{FormattedTNSingle}Data.cs";
-            return clsFile.StoreToFile(dalCode.ToString(), fileName, folderPath, true);
-        }
-
-        #endregion
-
         #region ADO Code
 
         #region ADO Class Structure
@@ -1079,6 +505,11 @@ namespace {AppName}_Data.DataAccess
         {
             return $@"public static async Task<{FormattedTNSingle}DTO> Get{FormattedTNSingle}ByIdAsync(int {TableId.ToLower()})
         {{
+            if ({TableId.ToLower()} == null)
+            {{
+                return null;
+            }}
+
             if ({TableId.ToLower()} <= 0)
                 throw new ArgumentException(""{FormattedTNSingle} ID must be greater than zero"", nameof({TableId.ToLower()}));
 
@@ -1672,6 +1103,574 @@ namespace {AppName}_Data.DataAccess
             dalCode.Append(ADOClosing());
 
             return clsFile.StoreToFile(dalCode.ToString(), $"cls{FormattedTNSingle}Data.cs", folderPath, true);
+        }
+
+        #endregion
+
+        #region EF Code
+
+        #region EF Support Methods
+
+        #region For GetByID
+
+        private static string tResultsForGetByID()
+        {
+            var columnStrings = columns.Select(column =>
+            {
+                string dataType = clsUtil.ConvertDbTypeToCSharpType(column.DataType);
+                string isNullable = column.IsNullable ? "?" : string.Empty;
+                return $"{dataType}{isNullable} {clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name))}";
+            });
+
+            return string.Join(", ", columnStrings);
+        }
+
+        private static string InfoForGetByID()
+        {
+            if (columns == null || !columns.Any())
+            {
+                return string.Empty;
+            }
+
+            var resultBuilder = new StringBuilder();
+
+            foreach (var column in columns)
+            {
+                string formattedName = clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name));
+                string csharpType = clsUtil.ConvertDbTypeToCSharpType(column.DataType);
+
+                if (column.IsNullable)
+                {
+                    resultBuilder.AppendLine($"{formattedName} = x.{formattedName} != null ? x.{formattedName} : null,");
+                }
+                else
+                {
+                    resultBuilder.AppendLine($"x.{formattedName},");
+                }
+            }
+
+            if (resultBuilder.Length > 0)
+            {
+                resultBuilder.Length -= Environment.NewLine.Length + 1;
+            }
+
+            return resultBuilder.ToString();
+        }
+
+        private static string returnsForGetByID()
+        {
+            if (columns == null || !columns.Any())
+            {
+                return string.Empty;
+            }
+
+            var resultBuilder = new StringBuilder();
+
+            foreach (var column in columns)
+            {
+                string formattedName = clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name));
+                resultBuilder.AppendLine($"{FormattedTNSingleVar.ToLower()}Info.{formattedName},");
+            }
+
+            if (resultBuilder.Length > 0)
+            {
+                resultBuilder.Length -= Environment.NewLine.Length + 1;
+            }
+
+            return resultBuilder.ToString();
+        }
+
+        #endregion
+
+        #region For AddNew
+
+        private static string ParamatersForAddNew()
+        {
+            var columnStrings = columns
+                .Where(column => !column.IsIdentity)
+                .Select(column =>
+                {
+                    string dataType = clsUtil.ConvertDbTypeToCSharpType(column.DataType);
+                    string isNullable = column.IsNullable ? "?" : string.Empty;
+                    return $"{dataType}{isNullable} {clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name))}";
+                });
+
+            return string.Join(", ", columnStrings);
+        }
+
+        private static string ObjectForAddNew()
+        {
+            if (columns == null || !columns.Any())
+            {
+                return string.Empty;
+            }
+
+            var resultBuilder = new StringBuilder();
+
+            foreach (var column in columns)
+            {
+                string formattedName = clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name));
+
+                if (column.IsPrimaryKey)
+                {
+                    continue;
+                }
+                if (formattedName.ToLower() == "password")
+                {
+                    resultBuilder.AppendLine($"{formattedName} = clsSecure.HashPassword({formattedName}),");
+                    continue;
+                }
+                resultBuilder.AppendLine($"{formattedName} = {formattedName},");
+            }
+
+            if (resultBuilder.Length > 0)
+            {
+                resultBuilder.Length -= Environment.NewLine.Length + 1;
+            }
+
+            return resultBuilder.ToString();
+        }
+
+        #endregion
+
+        #region For Update
+
+        private static string ParamatersForUpdate()
+        {
+            return $"int {TableId},{ParamatersForAddNew()}";
+        }
+
+        private static string ObjectForUpdate()
+        {
+            if (columns == null || !columns.Any())
+            {
+                return string.Empty;
+            }
+
+            var resultBuilder = new StringBuilder();
+            bool firstLine = true;
+
+            foreach (var column in columns)
+            {
+                if (column.IsPrimaryKey)
+                {
+                    continue;
+                }
+
+                string formattedName = clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name));
+
+                if (!firstLine)
+                {
+                    resultBuilder.AppendLine();
+                }
+                else
+                {
+                    firstLine = false;
+                }
+
+                if (formattedName.ToLower() == "password")
+                {
+                    resultBuilder.Append($"existing{FormattedTNSingle}.{formattedName} = clsSecure.HashPassword({formattedName});");
+                    continue;
+                }
+
+                resultBuilder.Append($"existing{FormattedTNSingle}.{formattedName} = {formattedName};");
+            }
+
+            return resultBuilder.ToString();
+        }
+
+        #endregion
+
+        #endregion
+
+        #region EF Class Structure
+
+        private static string EFTopUsing()
+        {
+            return
+$@"using {AppName}_Data.Data;
+using {AppName}_Data.Entities;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using Utilities;
+
+namespace {AppName}_Data.DataAccess
+{{
+    public partial class cls{FormattedTNSingle}Data
+    {{";
+        }
+
+        private static string EFGetAllMethod()
+        {
+            return $@"public static async Task<List<{FormattedTNSingle}>> GetAll{FormattedTNPluralize}Async(int pageNumber = 1, int pageSize = 50)
+        {{
+            try
+            {{
+                await using var context = new AppDbContext();
+                var query = context.{FormattedTNPluralize}.AsNoTracking();
+
+                var {FormattedTNPluralizeVar} = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync().ConfigureAwait(false);
+
+                return ({FormattedTNPluralizeVar});
+            }}
+            catch (Exception ex)
+            {{
+                clsUtil.ErrorLogger(ex);
+                throw;
+            }}
+        }}
+
+";
+        }
+
+        private static string EFGetByIDMethod()
+        {
+            return $@"public static async Task<({tResultsForGetByID()})?> Get{FormattedTNSingle}InfoByIdAsync(int {TableId.ToLower()})
+{{
+    if ({TableId.ToLower()} <= 0)
+    {{
+        throw new ArgumentException(""{FormattedTNSingle} ID must be greater than 0."", nameof({TableId.ToLower()}));
+    }}
+
+    try
+    {{
+        await using var context = new AppDbContext();
+
+        var {FormattedTNSingleVar.ToLower()}Info = await context.{FormattedTNPluralize}
+            .Where(x => x.{TableId} == {TableId.ToLower()})
+            .Select(x => new
+            {{
+                {InfoForGetByID()}             
+            }})
+            .AsNoTracking()
+            .SingleOrDefaultAsync()
+            .ConfigureAwait(false);
+
+        if ({FormattedTNSingleVar.ToLower()}Info == null)
+        {{
+            return null;
+        }}
+
+        return (
+{returnsForGetByID()}
+);
+    }}
+    catch (Exception ex)
+    {{
+        clsUtil.ErrorLogger(ex);
+        throw;
+    }}
+}}
+
+";
+        }
+
+        private static string EFGetByUsernameAndPasswordMethod()
+        {
+            return $@"public static async Task<({tResultsForGetByID()})?> Get{FormattedTNSingle}InfoByUsernameAndPasswordAsync(string username, string password)
+{{
+         if (string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(username))
+            {{
+                throw new ArgumentException(""Username and Password must be declared."");
+            }}
+
+    try
+    {{
+        await using var context = new AppDbContext();
+
+        var {FormattedTNSingleVar.ToLower()}Info = await context.{FormattedTNPluralize}.Where(x => x.Username == username && clsSecure.VerifyPassword(password, x.Password))
+            .Select(x => new
+            {{
+                {InfoForGetByID()}             
+            }})
+            .AsNoTracking()
+            .SingleOrDefaultAsync()
+            .ConfigureAwait(false);
+
+        if ({FormattedTNSingleVar.ToLower()}Info == null)
+        {{
+            return null;
+        }}
+
+        return (
+{returnsForGetByID()}
+);
+    }}
+    catch (Exception ex)
+    {{
+        clsUtil.ErrorLogger(ex);
+        throw;
+    }}
+}}
+
+";
+        }
+
+        private static string EFGetByPersonIDMethod()
+        {
+            return $@"public static async Task<({tResultsForGetByID()})?> Get{FormattedTNSingle}InfoByPersonIdAsync(int personid)
+{{
+    if (personid <= 0)
+    {{
+        throw new ArgumentException(""Person ID must be greater than 0."", nameof(personid));
+    }}
+
+    try
+    {{
+        await using var context = new AppDbContext();
+
+        var {FormattedTNSingleVar.ToLower()}Info = await context.{FormattedTNPluralize}
+            .Where(x => x.PersonId == personid)
+            .Select(x => new
+            {{
+                {InfoForGetByID()}             
+            }})
+            .AsNoTracking()
+            .SingleOrDefaultAsync()
+            .ConfigureAwait(false);
+
+        if ({FormattedTNSingleVar.ToLower()}Info == null)
+        {{
+            return null;
+        }}
+
+        return (
+{returnsForGetByID()}
+);
+    }}
+    catch (Exception ex)
+    {{
+        clsUtil.ErrorLogger(ex);
+        throw;
+    }}
+}}
+
+";
+        }
+
+        private static string EFAddNewMethod()
+        {
+            return $@"public static async Task<int> AddNew{FormattedTNSingle}Async({ParamatersForAddNew()})
+        {{
+            try
+            {{
+                {FormattedTNSingle} new{FormattedTNSingle} = new {FormattedTNSingle}
+                {{
+{ObjectForAddNew()}   
+                }};
+
+                await using var context = new AppDbContext();
+                await context.{FormattedTNPluralize}.AddAsync(new{FormattedTNSingle}).ConfigureAwait(false);
+                await context.SaveChangesAsync().ConfigureAwait(false);
+
+                return new{FormattedTNSingle}.{TableId};
+            }}
+            catch (Exception ex)
+            {{
+                clsUtil.ErrorLogger(ex);
+                return -1;
+            }}
+        }}
+
+";
+        }
+
+        private static string EFUpdateMethod()
+        {
+            return $@"public static async Task<bool> Update{FormattedTNSingle}Async({ParamatersForUpdate()})
+        {{
+            if ({TableId} <= 0)
+            {{
+                return false;
+            }}
+
+            try
+            {{
+                await using var context = new AppDbContext();
+                var existing{FormattedTNSingle} = await context.{FormattedTNPluralize}.SingleOrDefaultAsync(x => x.{TableId} == {TableId}).ConfigureAwait(false);
+
+                if (existing{FormattedTNSingle} == null)
+                {{
+                    return false;
+                }}
+
+{ObjectForUpdate()}               
+
+                await context.SaveChangesAsync().ConfigureAwait(false);
+                return true;
+            }}
+            catch (Exception ex)
+            {{
+                clsUtil.ErrorLogger(ex);
+                return false;
+            }}
+        }}
+
+";
+        }
+
+        private static string EFDeleteMethod()
+        {
+            return $@"public static async Task<bool> Delete{FormattedTNSingle}Async(int {TableId})
+        {{
+            if ({TableId} <= 0)
+            {{
+                return false;
+            }}
+
+            try
+            {{
+                await using var context = new AppDbContext();
+                {FormattedTNSingle}? {FormattedTNSingleVar} = await context.{FormattedTNPluralize}.SingleOrDefaultAsync(x => x.{TableId} == {TableId}).ConfigureAwait(false);
+
+                if ({FormattedTNSingleVar} == null)
+                {{
+                    return false;
+                }}
+
+                context.{FormattedTNPluralize}.Remove({FormattedTNSingleVar});
+                await context.SaveChangesAsync().ConfigureAwait(false);
+
+                return true;
+            }}
+            catch (Exception ex)
+            {{
+                clsUtil.ErrorLogger(ex);
+                return false;
+            }}
+        }}
+
+";
+        }
+
+        private static string EFIsExistMethod()
+        {
+            return $@"public static async Task<bool> Is{FormattedTNSingle}ExistsAsync(int {TableId})
+        {{
+            if ({TableId} <= 0)
+            {{
+                return false;
+            }}
+
+            const string sqlQuery = ""EXEC SP_Is{FormattedTNSingle}Exists @{TableId} = @{TableId}"";
+
+            try
+            {{
+                await using var context = new AppDbContext();
+                int result = await context.Database.SqlQueryRaw<int>(sqlQuery, new SqlParameter(""@{TableId}"", {TableId})).SingleOrDefaultAsync().ConfigureAwait(false);
+
+                return result == 1;
+            }}
+            catch (Exception ex)
+            {{
+                clsUtil.ErrorLogger(ex);
+                return false;
+            }}
+        }}
+
+";
+        }
+
+        private static string EFIsExistByUsernameMethod()
+        {
+            return $@"public static async Task<bool> Is{FormattedTNSingle}ExistsAsync(string UserName)
+        {{
+             if (string.IsNullOrWhiteSpace(UserName))
+            {{
+                return false;
+            }}
+
+  const string sqlQuery = ""EXEC SP_CheckUserExistsByUserName @UserName = @UserName"";
+
+            try
+            {{
+                await using var context = new AppDbContext();
+                int result = await context.Database.SqlQueryRaw<int>(sqlQuery, new SqlParameter(""@UserName"", UserName)).SingleOrDefaultAsync().ConfigureAwait(false);
+
+                return result == 1;
+            }}
+            catch (Exception ex)
+            {{
+                clsUtil.ErrorLogger(ex);
+                return false;
+            }}
+        }}
+
+";
+        }
+
+        private static string EFIsExistByPersonIdMethod()
+        {
+            return $@"public static async Task<bool> Is{FormattedTNSingle}ExistsByPersonIdAsync(int personId)
+        {{
+            if (personId <= 0)
+            {{
+                return false;
+            }}
+
+            const string sqlQuery = ""EXEC SP_CheckUserExistsByPersonID @personId = @personId"";
+
+            try
+            {{
+                await using var context = new AppDbContext();
+                int result = await context.Database.SqlQueryRaw<int>(sqlQuery, new SqlParameter(""@personId"", personId)).SingleOrDefaultAsync().ConfigureAwait(false);
+
+                return result == 1;
+            }}
+            catch (Exception ex)
+            {{
+                clsUtil.ErrorLogger(ex);
+                return false;
+            }}
+        }}
+
+";
+        }
+
+        private static string EFClosing()
+        {
+            return $@"}}}}";
+        }
+
+        #endregion
+
+        public static bool GenerateEFDalCode(string tableName, string? folderPath = null)
+        {
+            if (tableName == null)
+            {
+                return false;
+            }
+            else
+            {
+                TableName = tableName;
+            }
+
+            if (string.IsNullOrEmpty(folderPath))
+            {
+                folderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"Code Generator\\{AppName}\\DataAccess\\Basic\\");
+            }
+
+            StringBuilder dalCode = new StringBuilder();
+
+            dalCode.Append(EFTopUsing() + EFGetAllMethod() + EFGetByIDMethod());
+
+            if (clsFormat.Singularize(_TableName.ToLower()) == "user")
+            {
+                dalCode.Append(EFGetByPersonIDMethod() + EFGetByUsernameAndPasswordMethod());
+            }
+
+            dalCode.Append(EFAddNewMethod() + EFUpdateMethod() + EFDeleteMethod() + EFIsExistMethod());
+
+            if (clsFormat.Singularize(_TableName.ToLower()) == "user")
+            {
+                dalCode.Append(EFIsExistByUsernameMethod() + EFIsExistByPersonIdMethod());
+            }
+
+            dalCode.Append(EFClosing());
+
+            string fileName = $"cls{FormattedTNSingle}Data.cs";
+            return clsFile.StoreToFile(dalCode.ToString(), fileName, folderPath, true);
         }
 
         #endregion

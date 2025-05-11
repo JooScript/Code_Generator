@@ -82,7 +82,7 @@ namespace {AppName}_API.Controllers
 
         private static string GetByIdEndpoint()
         {
-            return $@"        [HttpGet(""{{{TableId}}}"", Name = ""GetById"")]
+            return $@"        [HttpGet(""{{{TableId}}}"", Name = ""Get{FormattedTNSingle}ById"")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -160,7 +160,7 @@ namespace {AppName}_API.Controllers
 
         private static string GetAllEndpoint()
         {
-            return $@"        [HttpGet(""All"", Name = ""GetAll"")]
+            return $@"        [HttpGet(""All"", Name = ""GetAll{FormattedTNPluralize}"")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<{FormattedTNSingle}DTO>> GetAll{FormattedTNPluralize}()
