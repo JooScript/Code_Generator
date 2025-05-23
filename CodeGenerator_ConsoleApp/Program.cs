@@ -28,7 +28,7 @@ namespace CodeGenerator_ConsoleApp
                 {
                     bool dalSuccess = clsDaGenerator.GenerateDalCode(table, codeStyle);
                     bool blSuccess = clsBlGenerator.GenerateBlCode(table);
-                    bool IlSuccess = clsIlGenerator.GenerateControllerCode(table);
+                    bool IlSuccess = clsAPIGenerator.GenerateControllerCode(table);
 
                     if (!dalSuccess || !blSuccess || !IlSuccess)
                     {

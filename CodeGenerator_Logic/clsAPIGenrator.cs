@@ -3,8 +3,39 @@ using Utilities;
 
 namespace CodeGenerator_Logic
 {
-    public class clsIlGenerator : clsGenrator
+    public class clsAPIGenerator : clsGenrator
     {
+        private static int _versionNumber = 1;
+        private static readonly object _versionLock = new object();
+
+        /// <summary>
+        /// Gets or sets the application version number.
+        /// </summary>
+        /// <value>The current version number of the application.</value>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when setting a negative version number.</exception>
+        public static int VersionNumber
+        {
+            get
+            {
+                lock (_versionLock)
+                {
+                    return _versionNumber;
+                }
+            }
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), "Version number cannot be negative.");
+                }
+
+                lock (_versionLock)
+                {
+                    _versionNumber = value;
+                }
+            }
+        }
+
         #region Support Methods
 
         private static string GetControllerName()
@@ -74,7 +105,7 @@ using {AppName}_Data.DTO;
 
 namespace {AppName}_API.Controllers
 {{
-    [Route(""api/{FormattedTNPluralize}"")]
+    [Route(""api/v{_versionNumber}/{FormattedTNPluralize}"")]
     [ApiController]
     public class {GetControllerName()} : ControllerBase
     {{";
