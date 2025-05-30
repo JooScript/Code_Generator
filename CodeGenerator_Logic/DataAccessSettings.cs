@@ -2,7 +2,7 @@
 
 namespace CodeGenerator_Logic
 {
-    public static class clsDataAccessSettings
+    public static class DataAccessSettings
     {
         private static readonly IConfigurationRoot _configuration;
 
@@ -22,7 +22,7 @@ namespace CodeGenerator_Logic
             }
         }
 
-        static clsDataAccessSettings()
+        static DataAccessSettings()
         {
             try
             {

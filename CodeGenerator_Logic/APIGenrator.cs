@@ -3,7 +3,7 @@ using Utilities;
 
 namespace CodeGenerator_Logic
 {
-    public class clsAPIGenerator : clsGenrator
+    public class APIGenerator : Genrator
     {
         private static int _versionNumber = 1;
         private static readonly object _versionLock = new object();
@@ -54,8 +54,8 @@ namespace CodeGenerator_Logic
                     continue;
                 }
 
-                string propertyName = clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name));
-                string csharpType = clsUtil.ConvertDbTypeToCSharpType(column.DataType);
+                string propertyName = FormatUtil.CapitalizeFirstChars(Global.FormatId(column.Name));
+                string csharpType = GeneralUtil.ConvertDbTypeToCSharpType(column.DataType);
 
                 if (csharpType == "string")
                 {
@@ -79,11 +79,10 @@ namespace CodeGenerator_Logic
 
             foreach (var column in columns)
             {
-                string propertyName = clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name));
+                string propertyName = FormatUtil.CapitalizeFirstChars(Global.FormatId(column.Name));
 
                 if (column.IsPrimaryKey)
                 {
-                    sb.AppendLine($"            {FormattedTNSingleVar}.{propertyName} = updated{FormattedTNSingle}.Id;");
                     continue;
                 }
 
@@ -113,22 +112,22 @@ namespace {AppName}_API.Controllers
 
         private static string GetByIdEndpoint()
         {
-            return $@"        [HttpGet(""{{{TableId}}}"", Name = ""Get{FormattedTNSingle}ById"")]
+            return $@"        [HttpGet(""{{Id}}"", Name = ""Get{FormattedTNSingle}ById"")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<{FormattedTNSingle}DTO> Get{FormattedTNSingle}ById(int {TableId})
+        public ActionResult<{FormattedTNSingle}DTO> Get{FormattedTNSingle}ById(int Id)
         {{
-            if ({TableId} < 1)
+            if (Id < 1)
             {{
-                return BadRequest($""Not accepted ID {{{TableId}}}"");
+                return BadRequest($""Not accepted ID {{Id}}"");
             }}
 
-            cls{FormattedTNSingle} {FormattedTNSingleVar} = cls{FormattedTNSingle}.Find({TableId});
+           {LogicClsName} {FormattedTNSingleVar} = {LogicClsName}.Find(Id);
 
             if ({FormattedTNSingleVar} == null)
             {{
-                return NotFound($""{FormattedTNSingle} with ID {{{TableId}}} not found."");
+                return NotFound($""{FormattedTNSingle} with ID {{Id}} not found."");
             }}
 
             return Ok({FormattedTNSingleVar}.DTO);
@@ -149,7 +148,7 @@ namespace {AppName}_API.Controllers
                 return BadRequest(""Invalid {FormattedTNSingleVar} data."");
             }}
 
-            cls{FormattedTNSingle} {FormattedTNSingleVar} = new cls{FormattedTNSingle}(new{FormattedTNSingle});
+            {LogicClsName} {FormattedTNSingleVar} = new {LogicClsName}(new{FormattedTNSingle});
             {FormattedTNSingleVar}.Save();
             new{FormattedTNSingle}.Id = {FormattedTNSingleVar}.{TableId};
 
@@ -172,7 +171,7 @@ namespace {AppName}_API.Controllers
                 return BadRequest(""Invalid {FormattedTNSingleVar} data."");
             }}
 
-            cls{FormattedTNSingle} {FormattedTNSingleVar} = cls{FormattedTNSingle}.Find(Id);
+            {LogicClsName} {FormattedTNSingleVar} =  {LogicClsName}.Find(Id);
 
             if ({FormattedTNSingleVar} == null)
             {{
@@ -194,9 +193,9 @@ namespace {AppName}_API.Controllers
             return $@"        [HttpGet(""All"", Name = ""GetAll{FormattedTNPluralize}"")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<{FormattedTNSingle}DTO>> GetAll{FormattedTNPluralize}()
+        public ActionResult<IEnumerable<{FormattedTNSingle}DTO>> GetAll{FormattedTNPluralize}(int pageNumber = 1, int pageSize = 50)
         {{
-            List<{FormattedTNSingle}DTO> {FormattedTNPluralizeVar}List = cls{FormattedTNSingle}.GetAll{FormattedTNPluralize}();
+            List<{FormattedTNSingle}DTO> {FormattedTNPluralizeVar}List = {LogicClsName}.GetAll{FormattedTNPluralize}( pageNumber ,  pageSize );
             if ({FormattedTNPluralizeVar}List.Count == 0)
             {{
                 return NotFound(""No {FormattedTNPluralize} Found!"");
@@ -209,12 +208,12 @@ namespace {AppName}_API.Controllers
 
         private static string IsExistsEndpoint()
         {
-            return $@"        [HttpGet(""Exists/{{id}}"", Name = ""Is{FormattedTNSingle}Exists"")]
+            return $@"        [HttpGet(""Exists/{{Id}}"", Name = ""Is{FormattedTNSingle}Exists"")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Is{FormattedTNSingle}Exists(int id)
+        public async Task<IActionResult> Is{FormattedTNSingle}Exists(int Id)
         {{
-            bool exists = await cls{FormattedTNSingle}.Is{FormattedTNSingle}ExistsAsync(id);
+            bool exists = await {LogicClsName}.Is{FormattedTNSingle}ExistsAsync(Id);
             if (!exists)
             {{
                 return NotFound(new {{ Message = ""{FormattedTNSingle} Not Found!"" }});
@@ -232,7 +231,7 @@ namespace {AppName}_API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<int> Get{FormattedTNPluralize}Count()
         {{
-            return Ok(cls{FormattedTNSingle}.{FormattedTNPluralize}Count());
+            return Ok({LogicClsName}.{FormattedTNPluralize}Count());
         }}
 
 ";
@@ -251,7 +250,7 @@ namespace {AppName}_API.Controllers
                 return BadRequest($""Not accepted ID {{Id}}"");
             }}
 
-            if (cls{FormattedTNSingle}.Delete{FormattedTNSingle}(Id))
+            if ({LogicClsName}.Delete{FormattedTNSingle}(Id))
             {{
                 return Ok($""{FormattedTNSingle} with ID {{Id}} has been deleted."");
             }}
@@ -286,7 +285,7 @@ namespace {AppName}_API.Controllers
             if (string.IsNullOrEmpty(folderPath))
             {
                 folderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-                    $"Code Generator\\{clsDataAccessSettings.AppName()}\\Controllers");
+                    $"Code Generator\\{DataAccessSettings.AppName()}\\Controllers");
             }
 
             StringBuilder controllerCode = new StringBuilder();
@@ -302,7 +301,7 @@ namespace {AppName}_API.Controllers
             controllerCode.Append(Closing());
 
             string fileName = $"{GetControllerName()}.cs";
-            return clsFile.StoreToFile(controllerCode.ToString(), fileName, folderPath, true);
+            return FileUtil.StoreToFile(controllerCode.ToString(), fileName, folderPath, true);
         }
 
     }

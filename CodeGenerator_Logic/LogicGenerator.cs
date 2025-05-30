@@ -3,7 +3,7 @@ using Utilities;
 
 namespace CodeGenerator_Logic
 {
-    public class clsBlGenerator : clsGenrator
+    public class LogicGenerator : Genrator
     {
         #region Support Methods
 
@@ -17,13 +17,37 @@ namespace CodeGenerator_Logic
             return string.Join(", ", parameters);
         }
 
+        private static string GetClassNameFromColumnName(string colName)
+        {
+
+            if (string.IsNullOrEmpty(colName))
+            {
+                return string.Empty;
+            }
+
+            foreach (var keyTable in foreignKeys)
+            {
+                if (colName.ToLower() == keyTable.ColumnName.ToLower())
+                {
+                    return FormatUtil.Singularize(keyTable.ReferencedTable);
+                }
+            }
+
+            return string.Empty;
+        }
+
+        private static string GetForeignKeyClassName(string colName)
+        {
+            return $"{GetClassNameFromColumnName(colName)}Logic";
+        }
+
         private static string ConstructorAssignments()
         {
             var sb = new StringBuilder();
 
             foreach (var column in columns)
             {
-                string propertyName = clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name));
+                string propertyName = FormatUtil.CapitalizeFirstChars(Global.FormatId(column.Name));
                 if (column.IsPrimaryKey)
                 {
                     sb.AppendLine($"            this.{propertyName} = {FormattedTNSingleVar}DTO.Id;");
@@ -34,9 +58,9 @@ namespace CodeGenerator_Logic
                 if (column.IsForeignKey && !column.IsNullable)
                 {
                     string colName = propertyName.Substring(0, propertyName.Length - 2);
-                    string className = GetClassNameFromColumnName(propertyName);
+                    string clsName = $"{GetForeignKeyClassName(propertyName)}";
 
-                    sb.AppendLine($"            this.{colName}Info = cls{className}.Find({FormattedTNSingleVar}DTO.{propertyName});");
+                    sb.AppendLine($"            this.{colName}Info = {clsName}.Find(DTO.Id);");
                 }
             }
 
@@ -58,7 +82,7 @@ using Utilities;
 
 namespace {AppName}_Business.BusinessLogic
 {{
-    public class cls{FormattedTNSingle}
+    public class {LogicClsName}
     {{";
         }
 
@@ -94,7 +118,7 @@ namespace {AppName}_Business.BusinessLogic
                 }
                 first = false;
 
-                sb.Append($"this.{clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name))}");
+                sb.Append($"this.{FormatUtil.CapitalizeFirstChars(Global.FormatId(column.Name))}");
 
             }
 
@@ -112,9 +136,9 @@ namespace {AppName}_Business.BusinessLogic
 
             foreach (var column in columns)
             {
-                string csharpType = clsUtil.ConvertDbTypeToCSharpType(column.DataType);
+                string csharpType = GeneralUtil.ConvertDbTypeToCSharpType(column.DataType);
                 string nullableSymbol = column.IsNullable ? "?" : "";
-                string propertyName = clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name));
+                string propertyName = FormatUtil.CapitalizeFirstChars(Global.FormatId(column.Name));
 
                 sb.AppendLine($"        public {csharpType}{nullableSymbol} {propertyName}");
                 sb.AppendLine("        {");
@@ -126,8 +150,8 @@ namespace {AppName}_Business.BusinessLogic
                 if (column.IsForeignKey)
                 {
                     string colName = propertyName.Substring(0, propertyName.Length - 2);
-                    string className = GetClassNameFromColumnName(propertyName);
-                    sb.AppendLine($"        public cls{className} {colName}Info");
+                    string clsName = $"{GetForeignKeyClassName(propertyName)}";
+                    sb.AppendLine($"        public {clsName} {colName}Info");
                     sb.AppendLine("        {");
                     sb.AppendLine("            get;");
                     sb.AppendLine("            set;");
@@ -141,7 +165,7 @@ namespace {AppName}_Business.BusinessLogic
 
         private static string ParameterizedConstructor()
         {
-            return $@"        public cls{FormattedTNSingle}({ConstructorParameters()})
+            return $@"        public {LogicClsName}({ConstructorParameters()})
         {{
 {ConstructorAssignments()}
         }}
@@ -151,7 +175,7 @@ namespace {AppName}_Business.BusinessLogic
 
         private static string FindMethod()
         {
-            return $@"        public static async Task<cls{FormattedTNSingle}> FindAsync(int {TableId})
+            return $@"        public static async Task<{LogicClsName}> FindAsync(int {TableId})
         {{
             if ({TableId} <= 0 || {TableId} == null)
             {{
@@ -160,12 +184,12 @@ namespace {AppName}_Business.BusinessLogic
 
             try
             {{
-                {FormattedTNSingle}DTO {FormattedTNSingleVar}DTO = await cls{FormattedTNSingle}Data.Get{FormattedTNSingle}ByIdAsync({TableId});
-                return {FormattedTNSingleVar}DTO != null ? new cls{FormattedTNSingle}({FormattedTNSingleVar}DTO, enMode.Update) : null;
+                {FormattedTNSingle}DTO {FormattedTNSingleVar}DTO = await {DataClsName}.Get{FormattedTNSingle}ByIdAsync({TableId});
+                return {FormattedTNSingleVar}DTO != null ? new {LogicClsName}({FormattedTNSingleVar}DTO, enMode.Update) : null;
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return null;
             }}
         }}
@@ -175,7 +199,7 @@ namespace {AppName}_Business.BusinessLogic
 
         private static string FindByUsernameAndPasswordMethod()
         {
-            return $@"        public static async Task<cls{FormattedTNSingle}> FindByUsernameAndPasswordAsync(string username, string password)
+            return $@"        public static async Task<{LogicClsName}> FindByUsernameAndPasswordAsync(string username, string password)
         {{
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
              {{ 
@@ -184,12 +208,12 @@ return null;
 
             try
             {{
-                {FormattedTNSingle}DTO {FormattedTNSingleVar}DTO = await cls{FormattedTNSingle}Data.Get{FormattedTNSingle}ByUsernameAndPasswordAsync(username, password);
-                return {FormattedTNSingleVar}DTO != null ? new cls{FormattedTNSingle}({FormattedTNSingleVar}DTO, enMode.Update) : null;
+                {FormattedTNSingle}DTO {FormattedTNSingleVar}DTO = await {DataClsName}.Get{FormattedTNSingle}ByUsernameAndPasswordAsync(username, password);
+                return {FormattedTNSingleVar}DTO != null ? new {LogicClsName}({FormattedTNSingleVar}DTO, enMode.Update) : null;
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return null;
             }}
         }}
@@ -199,19 +223,19 @@ return null;
 
         private static string FindByPersonIDMethod()
         {
-            return $@"        public static async Task<cls{FormattedTNSingle}> FindByPersonIdAsync(int personId)
+            return $@"        public static async Task<{LogicClsName}> FindByPersonIdAsync(int personId)
         {{
             if (personId <= 0)
                 return null;
 
             try
             {{
-                {FormattedTNSingle}DTO {FormattedTNSingleVar}DTO = await cls{FormattedTNSingle}Data.Get{FormattedTNSingle}ByPersonIdAsync(personId);
-                return {FormattedTNSingleVar}DTO != null ? new cls{FormattedTNSingle}({FormattedTNSingleVar}DTO, enMode.Update) : null;
+                {FormattedTNSingle}DTO {FormattedTNSingleVar}DTO = await {DataClsName}.Get{FormattedTNSingle}ByPersonIdAsync(personId);
+                return {FormattedTNSingleVar}DTO != null ? new {LogicClsName}({FormattedTNSingleVar}DTO, enMode.Update) : null;
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return null;
             }}
         }}
@@ -221,7 +245,7 @@ return null;
 
         private static string FindByCountryNameMethod()
         {
-            return $@"        public static async Task<cls{FormattedTNSingle}> FindAsync(string CountryName)
+            return $@"        public static async Task<{LogicClsName}> FindAsync(string CountryName)
         {{
               if (string.IsNullOrWhiteSpace(CountryName))
             {{
@@ -230,12 +254,12 @@ return null;
 
             try
             {{
-                {FormattedTNSingle}DTO {FormattedTNSingleVar}DTO = await cls{FormattedTNSingle}Data.Get{FormattedTNSingle}ByCountryNameAsync(CountryName);
-                return {FormattedTNSingleVar}DTO != null ? new cls{FormattedTNSingle}({FormattedTNSingleVar}DTO, enMode.Update) : null;
+                {FormattedTNSingle}DTO {FormattedTNSingleVar}DTO = await {DataClsName}.Get{FormattedTNSingle}ByCountryNameAsync(CountryName);
+                return {FormattedTNSingleVar}DTO != null ? new {LogicClsName}({FormattedTNSingleVar}DTO, enMode.Update) : null;
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return null;
             }}
         }}
@@ -246,11 +270,11 @@ return null;
         private static string AddNewMethod()
         {
             string PasswordValidatation = "";
-            if (clsFormat.Singularize(_TableName.ToLower()) == "user")
+            if (FormatUtil.Singularize(_TableName.ToLower()) == "user")
             {
-                PasswordValidatation = @"            if (!clsValidate.IsValidStrongPassword(this.Password))
+                PasswordValidatation = @"            if (!ValidationUtil.IsValidStrongPassword(this.Password))
             {
-                clsUtil.ErrorLogger(new Exception(""Password does not meet strength requirements""));
+                GeneralUtil.ErrorLogger(new Exception(""Password does not meet strength requirements""));
                 return false;
             }
 ";
@@ -260,12 +284,12 @@ return null;
         {{{PasswordValidatation}
             try
             {{
-                this.{TableId} = await cls{FormattedTNSingle}Data.Add{FormattedTNSingle}Async(DTO);
+                this.{TableId} = await {DataClsName}.Add{FormattedTNSingle}Async(DTO);
                 return (this.{TableId} != -1);
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return false;
             }}
         }}
@@ -276,11 +300,11 @@ return null;
         private static string UpdateMethod()
         {
             string PasswordValidatation = "";
-            if (clsFormat.Singularize(_TableName.ToLower()) == "user")
+            if (FormatUtil.Singularize(_TableName.ToLower()) == "user")
             {
-                PasswordValidatation = @"            if (!clsValidate.IsValidStrongPassword(this.Password))
+                PasswordValidatation = @"            if (!ValidationUtil.IsValidStrongPassword(this.Password))
             {
-                clsUtil.ErrorLogger(new Exception(""Password does not meet strength requirements""));
+                GeneralUtil.ErrorLogger(new Exception(""Password does not meet strength requirements""));
                 return false;
             }
 ";
@@ -290,11 +314,11 @@ return null;
         {{{PasswordValidatation}
             try
             {{
-                return await cls{FormattedTNSingle}Data.Update{FormattedTNSingle}Async(DTO);
+                return await {DataClsName}.Update{FormattedTNSingle}Async(DTO);
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return false;
             }}
         }}
@@ -334,15 +358,15 @@ return null;
 
         private static string GetAllMethod()
         {
-            return $@"        public static async Task<List<{FormattedTNSingle}DTO>> GetAll{FormattedTNPluralize}Async()
+            return $@"        public static async Task<List<{FormattedTNSingle}DTO>> GetAll{FormattedTNPluralize}Async(int pageNumber = 1, int pageSize = 50)
         {{
             try
             {{
-                return await cls{FormattedTNSingle}Data.GetAll{FormattedTNPluralize}Async();
+                return await {DataClsName}.GetAll{FormattedTNPluralize}Async( pageNumber,  pageSize );
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 throw;
             }}
         }}
@@ -354,7 +378,7 @@ return null;
         {
             return $@"        public static async Task<bool> Is{FormattedTNSingle}ExistsAsync(int {TableId})
         {{
-            return await cls{FormattedTNSingle}Data.Is{FormattedTNSingle}ExistsAsync({TableId});
+            return await {DataClsName}.Is{FormattedTNSingle}ExistsAsync({TableId});
         }}
 
 ";
@@ -369,11 +393,11 @@ return null;
 
             try
             {{
-                return await cls{FormattedTNSingle}Data.Is{FormattedTNSingle}ExistsByUsernameAsync(username);
+                return await {DataClsName}.Is{FormattedTNSingle}ExistsByUsernameAsync(username);
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return false;
             }}
         }}
@@ -390,11 +414,11 @@ return null;
 
             try
             {{
-                return await cls{FormattedTNSingle}Data.Is{FormattedTNSingle}ExistsByPersonIdAsync(personId);
+                return await {DataClsName}.Is{FormattedTNSingle}ExistsByPersonIdAsync(personId);
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return false;
             }}
         }}
@@ -406,7 +430,7 @@ return null;
         {
             return $@"        public static async Task<int> Get{FormattedTNPluralize}CountAsync()
         {{
-            return await cls{FormattedTNSingle}Data.{FormattedTNPluralize}CountAsync();
+            return await {DataClsName}.{FormattedTNPluralize}CountAsync();
         }}
 
 ";
@@ -416,7 +440,7 @@ return null;
         {
             return $@"        public static async Task<bool> Delete{FormattedTNSingle}Async(int {TableId})
         {{
-            return await cls{FormattedTNSingle}Data.Delete{FormattedTNSingle}Async({TableId});
+            return await {DataClsName}.Delete{FormattedTNSingle}Async({TableId});
         }}
 
 ";
@@ -427,9 +451,9 @@ return null;
             string StartRegion = $@"        #region Synchronous Wrappers
 
 ";
-            string GetAll = $@"       public static List<{FormattedTNSingle}DTO> GetAll{FormattedTNPluralize}()
+            string GetAll = $@"       public static List<{FormattedTNSingle}DTO> GetAll{FormattedTNPluralize}(int pageNumber = 1, int pageSize = 50)
         {{
-            return GetAll{FormattedTNPluralize}Async().GetAwaiter().GetResult();
+            return GetAll{FormattedTNPluralize}Async( pageNumber ,  pageSize ).GetAwaiter().GetResult();
         }}
 
 ";
@@ -439,7 +463,7 @@ return null;
         }}
 
 ";
-            string Find = $@"         public static cls{FormattedTNSingle} Find(int {TableId})
+            string Find = $@"         public static {LogicClsName} Find(int {TableId})
         {{
             return FindAsync({TableId}).GetAwaiter().GetResult();
         }}
@@ -466,13 +490,13 @@ return null;
             string EndRegion = $@"     #endregion
 
 ";
-            string FindByUserNameAndPassword = $@"         public static cls{FormattedTNSingle} FindByUsernameAndPassword(string username, string password)
+            string FindByUserNameAndPassword = $@"         public static {LogicClsName} FindByUsernameAndPassword(string username, string password)
         {{
             return FindByUsernameAndPasswordAsync( username, password).GetAwaiter().GetResult();  
         }}
 
 ";
-            string FindByCountryName = $@"         public static cls{FormattedTNSingle} Find(string CountryName)
+            string FindByCountryName = $@"         public static {LogicClsName} Find(string CountryName)
         {{
             return FindAsync(CountryName).GetAwaiter().GetResult();
         }}
@@ -490,7 +514,7 @@ return null;
         }}
 
 ";
-            string FindByPersonID = $@"         public static cls{FormattedTNSingle} FindByPersonId(int PersonID)
+            string FindByPersonID = $@"         public static {LogicClsName} FindByPersonId(int PersonID)
         {{
             return FindByPersonIdAsync(PersonID).GetAwaiter().GetResult();
         }}
@@ -502,13 +526,13 @@ return null;
             Wrapper.Append(StartRegion);
             Wrapper.Append(Find);
 
-            if (clsFormat.Singularize(_TableName.ToLower()) == "user")
+            if (FormatUtil.Singularize(_TableName.ToLower()) == "user")
             {
                 Wrapper.Append(FindByUserNameAndPassword);
                 Wrapper.Append(FindByPersonID);
             }
 
-            if (clsFormat.Singularize(_TableName.ToLower()) == "country")
+            if (FormatUtil.Singularize(_TableName.ToLower()) == "country")
             {
                 Wrapper.Append(FindByCountryName);
             }
@@ -517,7 +541,7 @@ return null;
             Wrapper.Append(GetAll);
             Wrapper.Append(IsExist);
 
-            if (clsFormat.Singularize(_TableName.ToLower()) == "user")
+            if (FormatUtil.Singularize(_TableName.ToLower()) == "user")
             {
                 Wrapper.Append(IsExistsByUserName);
                 Wrapper.Append(IsExistsByPersonID);
@@ -552,7 +576,7 @@ return null;
             if (string.IsNullOrEmpty(folderPath))
             {
                 folderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-                    $"Code Generator\\{clsDataAccessSettings.AppName()}\\BusinessLogic\\Basic");
+                    $"Code Generator\\{DataAccessSettings.AppName()}\\BusinessLogic\\Basic");
             }
 
             StringBuilder blCode = new StringBuilder();
@@ -564,13 +588,13 @@ return null;
             blCode.Append(ParameterizedConstructor());
             blCode.Append(FindMethod());
 
-            if (clsFormat.Singularize(_TableName.ToLower()) == "user")
+            if (FormatUtil.Singularize(_TableName.ToLower()) == "user")
             {
                 blCode.Append(FindByUsernameAndPasswordMethod());
                 blCode.Append(FindByPersonIDMethod());
             }
 
-            if (clsFormat.Singularize(_TableName.ToLower()) == "country")
+            if (FormatUtil.Singularize(_TableName.ToLower()) == "country")
             {
                 blCode.Append(FindByCountryNameMethod());
             }
@@ -581,7 +605,7 @@ return null;
             blCode.Append(GetAllMethod());
             blCode.Append(IsExistMethod());
 
-            if (clsFormat.Singularize(_TableName.ToLower()) == "user")
+            if (FormatUtil.Singularize(_TableName.ToLower()) == "user")
             {
                 blCode.Append(IsExistByUsernameMethod());
                 blCode.Append(IsExistByPersonIdMethod());
@@ -592,7 +616,7 @@ return null;
             blCode.Append(SynchronousWrappers());
             blCode.Append(Closing());
 
-            return clsFile.StoreToFile(blCode.ToString(), $"cls{FormattedTNSingle}.cs", folderPath, true);
+            return FileUtil.StoreToFile(blCode.ToString(), $"{LogicClsName}.cs", folderPath, true);
         }
 
     }

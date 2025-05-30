@@ -1,6 +1,6 @@
 ﻿namespace CodeGenerator_Logic
 {
-    public class clsGlobal
+    public class Global
     {
         public static string FormatId(string? input, bool smallD = true)
         {

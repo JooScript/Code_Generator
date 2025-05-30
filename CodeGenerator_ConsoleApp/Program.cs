@@ -1,6 +1,6 @@
 ﻿using CodeGenerator_Logic;
 using Utilities;
-using static CodeGenerator_Logic.clsGenrator;
+using static CodeGenerator_Logic.Genrator;
 
 namespace CodeGenerator_ConsoleApp
 {
@@ -10,9 +10,9 @@ namespace CodeGenerator_ConsoleApp
         {
             try
             {
-                clsDatabase.Initialize(clsDataAccessSettings.ConnectionString());
+                DatabaseUtil.Initialize(DataAccessSettings.ConnectionString());
 
-                List<string> tables = clsDatabase.GetTableNames();
+                List<string> tables = DatabaseUtil.GetTableNames();
 
                 if (tables == null || tables.Count == 0)
                 {
@@ -22,13 +22,13 @@ namespace CodeGenerator_ConsoleApp
 
                 Console.WriteLine("Tables found in the database:");
                 Console.WriteLine("-----------------------------");
-                clsConsole.ListConsolePrinting(tables);
+                ConsoleUtil.ListConsolePrinting(tables);
 
                 foreach (string table in tables)
                 {
-                    bool dalSuccess = clsDaGenerator.GenerateDalCode(table, codeStyle);
-                    bool blSuccess = clsBlGenerator.GenerateBlCode(table);
-                    bool IlSuccess = clsAPIGenerator.GenerateControllerCode(table);
+                    bool dalSuccess = DataAccessGenerator.GenerateDalCode(table, codeStyle);
+                    bool blSuccess = LogicGenerator.GenerateBlCode(table);
+                    bool IlSuccess = APIGenerator.GenerateControllerCode(table);
 
                     if (!dalSuccess || !blSuccess || !IlSuccess)
                     {
@@ -40,7 +40,7 @@ namespace CodeGenerator_ConsoleApp
                     }
                 }
 
-                clsConsole.PrintColoredMessage(
+                ConsoleUtil.PrintColoredMessage(
                     "---------------------------------------------------------------" +
                     Environment.NewLine +
                     "| Code generation completed. Check the Generated Code folder. |" +
@@ -51,8 +51,8 @@ namespace CodeGenerator_ConsoleApp
             }
             catch (Exception ex)
             {
-                clsUtil.ErrorLogger(ex);
-                clsConsole.PrintColoredMessage($"An error occurred: {ex.Message}", ConsoleColor.Red);
+                GeneralUtil.ErrorLogger(ex);
+                ConsoleUtil.PrintColoredMessage($"An error occurred: {ex.Message}", ConsoleColor.Red);
             }
         }
 
@@ -60,6 +60,5 @@ namespace CodeGenerator_ConsoleApp
         {
             GenerateCode();
         }
-
     }
 }

@@ -1,10 +1,9 @@
 using Utilities;
 using System.Text;
-using Microsoft.Extensions.Primitives;
 
 namespace CodeGenerator_Logic
 {
-    public class clsDaGenerator : clsGenrator
+    public class DataAccessGenerator : Genrator
     {
         #region DTO
         private static string ConstructorAssignments()
@@ -13,11 +12,11 @@ namespace CodeGenerator_Logic
 
             foreach (var column in columns)
             {
-                string propertyName = clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name));
+                string propertyName = FormatUtil.CapitalizeFirstChars(Global.FormatId(column.Name));
 
                 if (column.IsPrimaryKey)
                 {
-                    sb.AppendLine($"            this.Id = {propertyName};");
+                    sb.AppendLine($"            this.Id = Id;");
                     continue;
                 }
 
@@ -30,12 +29,17 @@ namespace CodeGenerator_Logic
         private static string ConstructorParameters()
         {
             var parameters = new List<string>();
+            parameters.Add($"int Id");
 
             foreach (var column in columns)
             {
-                string csharpType = clsUtil.ConvertDbTypeToCSharpType(column.DataType);
+                if (column.IsPrimaryKey)
+                {
+                    continue;
+                }
+                string csharpType = GeneralUtil.ConvertDbTypeToCSharpType(column.DataType);
                 string nullableSymbol = column.IsNullable ? "?" : "";
-                string parameterName = clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name));
+                string parameterName = FormatUtil.CapitalizeFirstChars(Global.FormatId(column.Name));
 
                 parameters.Add($"{csharpType}{nullableSymbol} {parameterName}");
             }
@@ -58,9 +62,9 @@ namespace CodeGenerator_Logic
 
             foreach (var column in columns)
             {
-                string csharpType = clsUtil.ConvertDbTypeToCSharpType(column.DataType);
+                string csharpType = GeneralUtil.ConvertDbTypeToCSharpType(column.DataType);
                 string nullableSymbol = column.IsNullable ? "?" : "";
-                string propertyName = clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name));
+                string propertyName = FormatUtil.CapitalizeFirstChars(Global.FormatId(column.Name));
 
                 if (column.IsPrimaryKey)
                 {
@@ -104,7 +108,7 @@ namespace {AppName}_Data.DTO
     public class {FormattedTNSingle}DTO
     {{";
 
-            return clsFile.StoreToFile(new StringBuilder().Append(TopUsing + ParameterizedConstructor() + Properties() + $@"}}}}").ToString(), $"{FormattedTNSingle}DTO.cs", folderPath, true);
+            return FileUtil.StoreToFile(new StringBuilder().Append(TopUsing + ParameterizedConstructor() + Properties() + $@"}}}}").ToString(), $"{FormattedTNSingle}DTO.cs", folderPath, true);
         }
 
         #endregion
@@ -127,7 +131,7 @@ BEGIN
         RETURN 0;
 END";
 
-            return clsDatabase.CreateStoredProcedure(procedureName, procedureBody);
+            return DatabaseUtil.CreateStoredProcedure(procedureName, procedureBody);
         }
 
         public static bool CountSP()
@@ -142,7 +146,7 @@ BEGIN
     SELECT COUNT(*) AS TotalCount FROM [{_TableName}];
 END";
 
-            return clsDatabase.CreateStoredProcedure(procedureName, procedureBody);
+            return DatabaseUtil.CreateStoredProcedure(procedureName, procedureBody);
         }
 
         public static bool GetAllSP()
@@ -162,7 +166,7 @@ BEGIN
     FETCH NEXT @PageSize ROWS ONLY;
 END";
 
-            return clsDatabase.CreateStoredProcedure(procedureName, procedureBody);
+            return DatabaseUtil.CreateStoredProcedure(procedureName, procedureBody);
         }
 
         public static bool GetByIdSP()
@@ -179,7 +183,7 @@ BEGIN
     WHERE [{TableId}] = @{TableId};
 END";
 
-            return clsDatabase.CreateStoredProcedure(procedureName, procedureBody);
+            return DatabaseUtil.CreateStoredProcedure(procedureName, procedureBody);
         }
 
         public static bool AddNewSP()
@@ -187,7 +191,7 @@ END";
             string procedureName = $"SP_Add{FormattedTNSingle}";
 
             string procedureBody = $@"
-{GetSPParameters(false)}
+{GetSPParameters(true)}
 AS
 BEGIN
     
@@ -198,10 +202,10 @@ BEGIN
         {GetInsertValuesList()}
     );
     
-    SELECT SCOPE_IDENTITY() AS New{TableId};
+    SET @New{TableId} = SCOPE_IDENTITY();
 END";
 
-            return clsDatabase.CreateStoredProcedure(procedureName, procedureBody);
+            return DatabaseUtil.CreateStoredProcedure(procedureName, procedureBody);
         }
 
         public static bool UpdateSP()
@@ -209,7 +213,7 @@ END";
             string procedureName = $"SP_Update{FormattedTNSingle}";
 
             string procedureBody = $@"
-{GetSPParameters(true)}
+{GetSPParameters(false)}
 AS
 BEGIN
     
@@ -219,7 +223,7 @@ BEGIN
     WHERE [{TableId}] = @{TableId};
 END";
 
-            return clsDatabase.CreateStoredProcedure(procedureName, procedureBody);
+            return DatabaseUtil.CreateStoredProcedure(procedureName, procedureBody);
         }
 
         public static bool DeleteSP()
@@ -238,7 +242,7 @@ BEGIN
     SELECT @@ROWCOUNT;
 END";
 
-            return clsDatabase.CreateStoredProcedure(procedureName, procedureBody);
+            return DatabaseUtil.CreateStoredProcedure(procedureName, procedureBody);
         }
 
         public static bool FindByCountryNameSP()
@@ -254,7 +258,7 @@ BEGIN
     WHERE Name = @CountryName;
 END";
 
-            return clsDatabase.CreateStoredProcedure(procedureName, procedureBody);
+            return DatabaseUtil.CreateStoredProcedure(procedureName, procedureBody);
         }
 
         public static bool FindByPersonIdSP()
@@ -270,7 +274,7 @@ BEGIN
     WHERE PersonId = @PersonId;
 END";
 
-            return clsDatabase.CreateStoredProcedure(procedureName, procedureBody);
+            return DatabaseUtil.CreateStoredProcedure(procedureName, procedureBody);
         }
 
         public static bool FindByUsernameAndPasswordSP()
@@ -289,7 +293,7 @@ BEGIN
     WHERE Username = @Username AND Password = @Password;
 END";
 
-            return clsDatabase.CreateStoredProcedure(procedureName, procedureBody);
+            return DatabaseUtil.CreateStoredProcedure(procedureName, procedureBody);
         }
 
         public static bool IsExistsByUsernameSP()
@@ -308,7 +312,7 @@ BEGIN
         SELECT 0 AS Result;
 END";
 
-            return clsDatabase.CreateStoredProcedure(procedureName, procedureBody);
+            return DatabaseUtil.CreateStoredProcedure(procedureName, procedureBody);
         }
 
         public static bool IsExistsByPersonIdSP()
@@ -327,7 +331,7 @@ BEGIN
         SELECT 0 AS Result;
 END";
 
-            return clsDatabase.CreateStoredProcedure(procedureName, procedureBody);
+            return DatabaseUtil.CreateStoredProcedure(procedureName, procedureBody);
         }
 
         public static bool GenerateAllSPs()
@@ -342,7 +346,7 @@ END";
             allSuccess &= IsExistsSP();
             allSuccess &= CountSP();
 
-            if (clsFormat.Singularize(_TableName.ToLower()) == "user")
+            if (FormatUtil.Singularize(_TableName.ToLower()) == "user")
             {
                 allSuccess &= FindByPersonIdSP();
                 allSuccess &= FindByUsernameAndPasswordSP();
@@ -350,7 +354,7 @@ END";
                 allSuccess &= IsExistsByPersonIdSP();
             }
 
-            if (clsFormat.Singularize(_TableName.ToLower()) == "country")
+            if (FormatUtil.Singularize(_TableName.ToLower()) == "country")
             {
                 allSuccess &= FindByCountryNameSP();
             }
@@ -367,27 +371,31 @@ END";
 
         private static string GetInsertColumnList()
         {
-            var columns = clsGenrator.columns.Where(c => !c.IsPrimaryKey);
+            var columns = Genrator.columns.Where(c => !c.IsPrimaryKey);
             return string.Join(",\n            ", columns.Select(c => $"[{c.Name}]"));
         }
 
         private static string GetInsertValuesList()
         {
-            var columns = clsGenrator.columns.Where(c => !c.IsIdentity);
+            var columns = Genrator.columns.Where(c => !c.IsIdentity);
             return string.Join(",\n            ", columns.Select(c => $"@{c.Name}"));
         }
 
         private static string GetUpdateSetClause()
         {
-            var columns = clsGenrator.columns.Where(c => !c.IsPrimaryKey);
+            var columns = Genrator.columns.Where(c => !c.IsPrimaryKey);
             return string.Join(",\n            ", columns.Select(c => $"[{c.Name}] = @{c.Name}"));
         }
 
-        private static string GetSPParameters(bool includeId)
+        private static string GetSPParameters(bool idAsOutput)
         {
             var parameters = new List<string>();
 
-            if (includeId)
+            if (idAsOutput)
+            {
+                parameters.Add($"        @New{TableId} INT OUTPUT");
+            }
+            else
             {
                 parameters.Add($"        @{TableId} INT");
             }
@@ -455,7 +463,7 @@ using Utilities;
 
 namespace {AppName}_Data.DataAccess
 {{
-    public partial class cls{FormattedTNSingle}Data
+    public partial class {DataClsName}
     {{";
         }
 
@@ -467,12 +475,11 @@ namespace {AppName}_Data.DataAccess
 
             try
             {{
-                using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString()))
+                using (SqlConnection connection = new SqlConnection(DataAccessSettings.ConnectionString()))
                 using (SqlCommand command = new SqlCommand(""SP_GetAll{FormattedTNPluralize}"", connection))
                 {{
                     command.CommandType = CommandType.StoredProcedure;
 
-                    // Add pagination parameters
                     command.Parameters.AddWithValue(""@PageNumber"", pageNumber);
                     command.Parameters.AddWithValue(""@PageSize"", pageSize);
 
@@ -493,7 +500,7 @@ namespace {AppName}_Data.DataAccess
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return new List<{FormattedTNSingle}DTO>();
             }}
         }}
@@ -515,7 +522,7 @@ namespace {AppName}_Data.DataAccess
 
             try
             {{
-                using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString()))
+                using (SqlConnection connection = new SqlConnection(DataAccessSettings.ConnectionString()))
                 using (SqlCommand command = new SqlCommand(""SP_Get{FormattedTNSingle}ById"", connection))
                 {{
                     command.CommandType = CommandType.StoredProcedure;
@@ -539,7 +546,7 @@ namespace {AppName}_Data.DataAccess
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return null;
             }}
         }}
@@ -558,7 +565,7 @@ namespace {AppName}_Data.DataAccess
 
             try
             {{
-                using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString()))
+                using (SqlConnection connection = new SqlConnection(DataAccessSettings.ConnectionString()))
                 using (SqlCommand command = new SqlCommand(""SP_Get{FormattedTNSingle}ByCountryName"", connection))
                 {{
                     command.CommandType = CommandType.StoredProcedure;
@@ -582,7 +589,7 @@ namespace {AppName}_Data.DataAccess
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return null;
             }}
         }}
@@ -602,12 +609,12 @@ namespace {AppName}_Data.DataAccess
 
             try
             {{
-                using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString()))
+                using (SqlConnection connection = new SqlConnection(DataAccessSettings.ConnectionString()))
                 using (SqlCommand command = new SqlCommand(""SP_Get{FormattedTNSingle}ByUsernameAndPassword"", connection))
                 {{
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddWithValue(""@Username"", username);
-                    command.Parameters.AddWithValue(""@Password"", clsSecure.HashPassword(password));
+                    command.Parameters.AddWithValue(""@Password"", SecurityUtil.HashPassword(password));
                     await connection.OpenAsync();
 
                     using (var reader = await command.ExecuteReaderAsync())
@@ -627,7 +634,7 @@ namespace {AppName}_Data.DataAccess
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return null;
             }}
         }}
@@ -644,7 +651,7 @@ namespace {AppName}_Data.DataAccess
 
             try
             {{
-                using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString()))
+                using (SqlConnection connection = new SqlConnection(DataAccessSettings.ConnectionString()))
                 using (SqlCommand command = new SqlCommand(""SP_Get{FormattedTNSingle}ByPersonId"", connection))
                 {{
                     command.CommandType = CommandType.StoredProcedure;
@@ -668,7 +675,7 @@ namespace {AppName}_Data.DataAccess
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return null;
             }}
         }}
@@ -692,7 +699,7 @@ namespace {AppName}_Data.DataAccess
 
             try
             {{
-                using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString()))
+                using (SqlConnection connection = new SqlConnection(DataAccessSettings.ConnectionString()))
                 using (SqlCommand command = new SqlCommand(""SP_Add{FormattedTNSingle}"", connection))
                 {{
                     command.CommandType = CommandType.StoredProcedure;
@@ -713,7 +720,7 @@ namespace {AppName}_Data.DataAccess
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return -1;
             }}
         }}
@@ -739,7 +746,7 @@ namespace {AppName}_Data.DataAccess
 
             try
             {{
-                using (var connection = new SqlConnection(clsDataAccessSettings.ConnectionString()))
+                using (var connection = new SqlConnection(DataAccessSettings.ConnectionString()))
                 using (var command = new SqlCommand(""SP_Update{FormattedTNSingle}"", connection))
                 {{
                     command.CommandType = CommandType.StoredProcedure;
@@ -753,7 +760,7 @@ namespace {AppName}_Data.DataAccess
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return false;
             }}
         }}
@@ -770,7 +777,7 @@ namespace {AppName}_Data.DataAccess
 
             try
             {{
-                using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString()))
+                using (SqlConnection connection = new SqlConnection(DataAccessSettings.ConnectionString()))
                 using (SqlCommand command = new SqlCommand(""SP_Delete{FormattedTNSingle}"", connection))
                 {{
                     command.CommandType = CommandType.StoredProcedure;
@@ -784,7 +791,7 @@ namespace {AppName}_Data.DataAccess
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return false;
             }}
         }}
@@ -801,20 +808,24 @@ namespace {AppName}_Data.DataAccess
 
             try
             {{
-                using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString()))
+                using (SqlConnection connection = new SqlConnection(DataAccessSettings.ConnectionString()))
                 using (SqlCommand command = new SqlCommand(""SP_Is{FormattedTNSingle}Exists"", connection))
                 {{
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddWithValue(""@{TableId}"", {TableId.ToLower()});
                     await connection.OpenAsync();
 
-                    object result = await command.ExecuteScalarAsync();
-                    return (result != null && Convert.ToInt32(result) == 1);
+                    var returnParameter = command.Parameters.Add(""@ReturnVal"", SqlDbType.Int);
+                    returnParameter.Direction = ParameterDirection.ReturnValue;
+
+                    await command.ExecuteNonQueryAsync();
+
+                    return (int)returnParameter.Value == 1;
                 }}
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return false;
             }}
         }}
@@ -831,20 +842,24 @@ namespace {AppName}_Data.DataAccess
 
             try
             {{
-                using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString()))
+                using (SqlConnection connection = new SqlConnection(DataAccessSettings.ConnectionString()))
                 using (SqlCommand command = new SqlCommand(""SP_Is{FormattedTNSingle}ExistsByUsername"", connection))
                 {{
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddWithValue(""@Username"", username);
                     await connection.OpenAsync();
 
-                    object result = await command.ExecuteScalarAsync();
-                    return (result != null && Convert.ToInt32(result) == 1);
+                    var returnParameter = command.Parameters.Add(""@ReturnVal"", SqlDbType.Int);
+                    returnParameter.Direction = ParameterDirection.ReturnValue;
+
+                    await command.ExecuteNonQueryAsync();
+
+                    return (int)returnParameter.Value == 1;
                 }}
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return false;
             }}
         }}
@@ -861,20 +876,24 @@ namespace {AppName}_Data.DataAccess
 
             try
             {{
-                using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString()))
+                using (SqlConnection connection = new SqlConnection(DataAccessSettings.ConnectionString()))
                 using (SqlCommand command = new SqlCommand(""SP_Is{FormattedTNSingle}ExistsByPersonId"", connection))
                 {{
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddWithValue(""@PersonId"", personId);
                     await connection.OpenAsync();
 
-                    object result = await command.ExecuteScalarAsync();
-                    return (result != null && Convert.ToInt32(result) == 1);
+                    var returnParameter = command.Parameters.Add(""@ReturnVal"", SqlDbType.Int);
+                    returnParameter.Direction = ParameterDirection.ReturnValue;
+
+                    await command.ExecuteNonQueryAsync();
+
+                    return (int)returnParameter.Value == 1;
                 }}
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return false;
             }}
         }}
@@ -888,7 +907,7 @@ namespace {AppName}_Data.DataAccess
         {{
             try
             {{
-                using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString()))
+                using (SqlConnection connection = new SqlConnection(DataAccessSettings.ConnectionString()))
                 using (SqlCommand command = new SqlCommand(""SP_{FormattedTNPluralize}Count"", connection))
                 {{
                     command.CommandType = CommandType.StoredProcedure;
@@ -907,7 +926,7 @@ namespace {AppName}_Data.DataAccess
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return 0;
             }}
         }}
@@ -926,8 +945,8 @@ namespace {AppName}_Data.DataAccess
             {
                 if (!column.IsNullable && !column.IsIdentity && column.Name.ToLower() != TableId.ToLower())
                 {
-                    string propertyName = clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name));
-                    string csharpType = clsUtil.ConvertDbTypeToCSharpType(column.DataType);
+                    string propertyName = FormatUtil.CapitalizeFirstChars(Global.FormatId(column.Name));
+                    string csharpType = GeneralUtil.ConvertDbTypeToCSharpType(column.DataType);
 
                     if (csharpType == "string")
                     {
@@ -990,10 +1009,34 @@ namespace {AppName}_Data.DataAccess
                     firstLine = false;
                 }
 
-                sb.Append($"                                {GetReaderMethod(clsUtil.ConvertDbTypeToCSharpType(column.DataType))}(reader.GetOrdinal(\"{column.Name}\"))");
+                sb.Append($"                                {GetReaderAssignment(column.Name, GeneralUtil.ConvertDbTypeToCSharpType(column.DataType), column.IsNullable)}");
             }
 
             return sb.ToString();
+        }
+
+        private static string GetReaderAssignment(string columnName, string csharpType, bool isNullable)
+        {
+            return $"reader.IsDBNull(reader.GetOrdinal(\"{columnName}\")) ? {GeneralUtil.GetDefaultValue(csharpType, isNullable)} : {GetReaderMethod(csharpType)}(reader.GetOrdinal(\"{columnName}\"))";
+        }
+
+        private static string GetReaderMethod(string csharpType)
+        {
+            switch (csharpType)
+            {
+                case "string": return "reader.GetString";
+                case "int": return "reader.GetInt32";
+                case "decimal": return "reader.GetDecimal";
+                case "double": return "reader.GetDouble";
+                case "float": return "reader.GetFloat";
+                case "DateTime": return "reader.GetDateTime";
+                case "bool": return "reader.GetBoolean";
+                case "byte[]": return "reader.GetBytes";
+                case "byte": return "reader.GetByte";
+                case "short": return "reader.GetInt16";
+                case "long": return "reader.GetInt64";
+                default: return "reader.GetValue";
+            }
         }
 
         private static string GetCommandParametersForAddUpdate()
@@ -1007,7 +1050,7 @@ namespace {AppName}_Data.DataAccess
                     continue;
                 }
 
-                string propertyName = clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name));
+                string propertyName = FormatUtil.CapitalizeFirstChars(Global.FormatId(column.Name));
 
                 if (column.IsNullable)
                 {
@@ -1017,39 +1060,9 @@ namespace {AppName}_Data.DataAccess
                 {
                     sb.AppendLine($@"                    command.Parameters.AddWithValue(""@{propertyName}"", {FormattedTNSingleVar.ToLower()}DTO.{propertyName});");
                 }
-
             }
 
             return sb.ToString();
-        }
-
-        private static string GetReaderMethod(string csharpType)
-        {
-            switch (csharpType)
-            {
-                case "string":
-                    return "reader.GetString";
-                case "int":
-                    return "reader.GetInt32";
-                case "decimal":
-                    return "reader.GetDecimal";
-                case "double":
-                    return "reader.GetDouble";
-                case "float":
-                    return "reader.GetFloat";
-                case "DateTime":
-                    return "reader.GetDateTime";
-                case "bool":
-                    return "reader.GetBoolean";
-                case "byte[]":
-                    return "reader.GetBytes";
-                case "byte":
-                    return "reader.GetByte";
-                case "short":
-                    return "reader.GetInt16";
-                default:
-                    return "reader.GetValue";
-            }
         }
 
         #endregion
@@ -1075,13 +1088,13 @@ namespace {AppName}_Data.DataAccess
             dalCode.Append(ADOTopUsing());
             dalCode.Append(ADOGetByIDMethod());
 
-            if (clsFormat.Singularize(_TableName.ToLower()) == "user")
+            if (FormatUtil.Singularize(_TableName.ToLower()) == "user")
             {
                 dalCode.Append(ADOGetByUsernameAndPasswordMethod());
                 dalCode.Append(ADOGetByPersonIDMethod());
             }
 
-            if (clsFormat.Singularize(_TableName.ToLower()) == "country")
+            if (FormatUtil.Singularize(_TableName.ToLower()) == "country")
             {
                 dalCode.Append(ADOGetByCountryNameMethod());
             }
@@ -1091,7 +1104,7 @@ namespace {AppName}_Data.DataAccess
             dalCode.Append(ADOGetAllMethod());
             dalCode.Append(ADOIsExistMethod());
 
-            if (clsFormat.Singularize(_TableName.ToLower()) == "user")
+            if (FormatUtil.Singularize(_TableName.ToLower()) == "user")
             {
                 dalCode.Append(ADOIsExistByUsernameMethod());
                 dalCode.Append(ADOIsExistByPersonIdMethod());
@@ -1102,7 +1115,7 @@ namespace {AppName}_Data.DataAccess
             dalCode.Append(ADOValidationMethod());
             dalCode.Append(ADOClosing());
 
-            return clsFile.StoreToFile(dalCode.ToString(), $"cls{FormattedTNSingle}Data.cs", folderPath, true);
+            return FileUtil.StoreToFile(dalCode.ToString(), $"{DataClsName}.cs", folderPath, true);
         }
 
         #endregion
@@ -1117,9 +1130,9 @@ namespace {AppName}_Data.DataAccess
         {
             var columnStrings = columns.Select(column =>
             {
-                string dataType = clsUtil.ConvertDbTypeToCSharpType(column.DataType);
+                string dataType = GeneralUtil.ConvertDbTypeToCSharpType(column.DataType);
                 string isNullable = column.IsNullable ? "?" : string.Empty;
-                return $"{dataType}{isNullable} {clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name))}";
+                return $"{dataType}{isNullable} {FormatUtil.CapitalizeFirstChars(Global.FormatId(column.Name))}";
             });
 
             return string.Join(", ", columnStrings);
@@ -1136,8 +1149,8 @@ namespace {AppName}_Data.DataAccess
 
             foreach (var column in columns)
             {
-                string formattedName = clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name));
-                string csharpType = clsUtil.ConvertDbTypeToCSharpType(column.DataType);
+                string formattedName = FormatUtil.CapitalizeFirstChars(Global.FormatId(column.Name));
+                string csharpType = GeneralUtil.ConvertDbTypeToCSharpType(column.DataType);
 
                 if (column.IsNullable)
                 {
@@ -1168,7 +1181,7 @@ namespace {AppName}_Data.DataAccess
 
             foreach (var column in columns)
             {
-                string formattedName = clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name));
+                string formattedName = FormatUtil.CapitalizeFirstChars(Global.FormatId(column.Name));
                 resultBuilder.AppendLine($"{FormattedTNSingleVar.ToLower()}Info.{formattedName},");
             }
 
@@ -1190,9 +1203,9 @@ namespace {AppName}_Data.DataAccess
                 .Where(column => !column.IsIdentity)
                 .Select(column =>
                 {
-                    string dataType = clsUtil.ConvertDbTypeToCSharpType(column.DataType);
+                    string dataType = GeneralUtil.ConvertDbTypeToCSharpType(column.DataType);
                     string isNullable = column.IsNullable ? "?" : string.Empty;
-                    return $"{dataType}{isNullable} {clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name))}";
+                    return $"{dataType}{isNullable} {FormatUtil.CapitalizeFirstChars(Global.FormatId(column.Name))}";
                 });
 
             return string.Join(", ", columnStrings);
@@ -1209,7 +1222,7 @@ namespace {AppName}_Data.DataAccess
 
             foreach (var column in columns)
             {
-                string formattedName = clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name));
+                string formattedName = FormatUtil.CapitalizeFirstChars(Global.FormatId(column.Name));
 
                 if (column.IsPrimaryKey)
                 {
@@ -1217,7 +1230,7 @@ namespace {AppName}_Data.DataAccess
                 }
                 if (formattedName.ToLower() == "password")
                 {
-                    resultBuilder.AppendLine($"{formattedName} = clsSecure.HashPassword({formattedName}),");
+                    resultBuilder.AppendLine($"{formattedName} = SecurityUtil.HashPassword({formattedName}),");
                     continue;
                 }
                 resultBuilder.AppendLine($"{formattedName} = {formattedName},");
@@ -1257,7 +1270,7 @@ namespace {AppName}_Data.DataAccess
                     continue;
                 }
 
-                string formattedName = clsFormat.CapitalizeFirstChars(clsGlobal.FormatId(column.Name));
+                string formattedName = FormatUtil.CapitalizeFirstChars(Global.FormatId(column.Name));
 
                 if (!firstLine)
                 {
@@ -1270,7 +1283,7 @@ namespace {AppName}_Data.DataAccess
 
                 if (formattedName.ToLower() == "password")
                 {
-                    resultBuilder.Append($"existing{FormattedTNSingle}.{formattedName} = clsSecure.HashPassword({formattedName});");
+                    resultBuilder.Append($"existing{FormattedTNSingle}.{formattedName} = SecurityUtil.HashPassword({formattedName});");
                     continue;
                 }
 
@@ -1297,7 +1310,7 @@ using Utilities;
 
 namespace {AppName}_Data.DataAccess
 {{
-    public partial class cls{FormattedTNSingle}Data
+    public partial class {DataClsName}
     {{";
         }
 
@@ -1316,7 +1329,7 @@ namespace {AppName}_Data.DataAccess
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 throw;
             }}
         }}
@@ -1358,7 +1371,7 @@ namespace {AppName}_Data.DataAccess
     }}
     catch (Exception ex)
     {{
-        clsUtil.ErrorLogger(ex);
+        GeneralUtil.ErrorLogger(ex);
         throw;
     }}
 }}
@@ -1379,7 +1392,7 @@ namespace {AppName}_Data.DataAccess
     {{
         await using var context = new AppDbContext();
 
-        var {FormattedTNSingleVar.ToLower()}Info = await context.{FormattedTNPluralize}.Where(x => x.Username == username && clsSecure.VerifyPassword(password, x.Password))
+        var {FormattedTNSingleVar.ToLower()}Info = await context.{FormattedTNPluralize}.Where(x => x.Username == username && SecurityUtil.VerifyPassword(password, x.Password))
             .Select(x => new
             {{
                 {InfoForGetByID()}             
@@ -1399,7 +1412,7 @@ namespace {AppName}_Data.DataAccess
     }}
     catch (Exception ex)
     {{
-        clsUtil.ErrorLogger(ex);
+        GeneralUtil.ErrorLogger(ex);
         throw;
     }}
 }}
@@ -1441,7 +1454,7 @@ namespace {AppName}_Data.DataAccess
     }}
     catch (Exception ex)
     {{
-        clsUtil.ErrorLogger(ex);
+        GeneralUtil.ErrorLogger(ex);
         throw;
     }}
 }}
@@ -1468,7 +1481,7 @@ namespace {AppName}_Data.DataAccess
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return -1;
             }}
         }}
@@ -1502,7 +1515,7 @@ namespace {AppName}_Data.DataAccess
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return false;
             }}
         }}
@@ -1536,7 +1549,7 @@ namespace {AppName}_Data.DataAccess
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return false;
             }}
         }}
@@ -1564,7 +1577,7 @@ namespace {AppName}_Data.DataAccess
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return false;
             }}
         }}
@@ -1592,7 +1605,7 @@ namespace {AppName}_Data.DataAccess
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return false;
             }}
         }}
@@ -1620,7 +1633,7 @@ namespace {AppName}_Data.DataAccess
             }}
             catch (Exception ex)
             {{
-                clsUtil.ErrorLogger(ex);
+                GeneralUtil.ErrorLogger(ex);
                 return false;
             }}
         }}
@@ -1655,22 +1668,22 @@ namespace {AppName}_Data.DataAccess
 
             dalCode.Append(EFTopUsing() + EFGetAllMethod() + EFGetByIDMethod());
 
-            if (clsFormat.Singularize(_TableName.ToLower()) == "user")
+            if (FormatUtil.Singularize(_TableName.ToLower()) == "user")
             {
                 dalCode.Append(EFGetByPersonIDMethod() + EFGetByUsernameAndPasswordMethod());
             }
 
             dalCode.Append(EFAddNewMethod() + EFUpdateMethod() + EFDeleteMethod() + EFIsExistMethod());
 
-            if (clsFormat.Singularize(_TableName.ToLower()) == "user")
+            if (FormatUtil.Singularize(_TableName.ToLower()) == "user")
             {
                 dalCode.Append(EFIsExistByUsernameMethod() + EFIsExistByPersonIdMethod());
             }
 
             dalCode.Append(EFClosing());
 
-            string fileName = $"cls{FormattedTNSingle}Data.cs";
-            return clsFile.StoreToFile(dalCode.ToString(), fileName, folderPath, true);
+            string fileName = $"{DataClsName}.cs";
+            return FileUtil.StoreToFile(dalCode.ToString(), fileName, folderPath, true);
         }
 
         #endregion
@@ -1681,5 +1694,4 @@ namespace {AppName}_Data.DataAccess
         }
 
     }
-
 }
