@@ -16,43 +16,96 @@ namespace CodeGenerator_ConsoleApp
 
                 if (tables == null || tables.Count == 0)
                 {
-                    Console.WriteLine("No tables found in the database.");
+                    ConsoleUtil.PrintColoredMessage("No tables found in the database.", ConsoleColor.Yellow);
                     return;
                 }
 
-                Console.WriteLine("Tables found in the database:");
-                Console.WriteLine("-----------------------------");
+                ConsoleUtil.PrintColoredMessage("Tables found in the database:", ConsoleColor.DarkCyan);
+                ConsoleUtil.PrintColoredMessage(new string('═', 60), ConsoleColor.DarkCyan);
                 ConsoleUtil.ListConsolePrinting(tables);
+                Console.WriteLine("");
+
+                short counter = 0;
+                bool allSuccess = true;
+                List<string> failedTables = new List<string>();
 
                 foreach (string table in tables)
                 {
-                    bool dalSuccess = DataAccessGenerator.GenerateDalCode(table, codeStyle);
-                    bool blSuccess = LogicGenerator.GenerateBlCode(table);
-                    bool IlSuccess = APIGenerator.GenerateControllerCode(table);
+                    counter++;
+                    string formatedCounter = FormatUtil.FormatNumbers(counter, tables.Count);
+                    string title = $"╔[{formatedCounter}] Generating Code For: {table}╗";
+                    string hyphens = $"╚{new string('═', title.Length - 2)}╝";
 
-                    if (!dalSuccess || !blSuccess || !IlSuccess)
+                    Console.WriteLine();
+                    Console.WriteLine();
+                    ConsoleUtil.PrintColoredMessage(title, ConsoleColor.DarkCyan);
+                    ConsoleUtil.PrintColoredMessage(hyphens, ConsoleColor.DarkCyan);
+                    Console.WriteLine();
+
+                    Console.Write($"- Creating Data Access Layer (DAL) for {table}... ");
+                    bool dalSuccess = DataAccessGenerator.GenerateDalCode(table, codeStyle);
+                    ConsoleUtil.PrintStatus(dalSuccess);
+
+                    Console.Write($"- Creating Business Logic (BL) for {table}... ");
+                    bool blSuccess = LogicGenerator.GenerateBlCode(table);
+                    ConsoleUtil.PrintStatus(blSuccess);
+
+                    Console.Write($"- Creating API Endpoints for {table}... ");
+                    bool ilSuccess = APIGenerator.GenerateControllerCode(table);
+                    ConsoleUtil.PrintStatus(ilSuccess);
+
+                    if (!dalSuccess || !blSuccess || !ilSuccess)
                     {
-                        throw new Exception(
-                            $"Code generation failed for table '{table}'. " +
-                            $"{(dalSuccess ? "" : "DAL generation failed. ")}" +
-                            $"{(blSuccess ? "" : "BL generation failed.")}" +
-                            $"{(IlSuccess ? "" : "IL generation failed.")}");
+                        failedTables.Add(table);
+                        allSuccess = false;
+                        string errorDetails =
+                            (dalSuccess ? "" : "❌ DAL ") +
+                            (blSuccess ? "" : "❌ BL ") +
+                            (ilSuccess ? "" : "❌ API");
+
+                        ConsoleUtil.PrintColoredMessage($"❌ Partial generation for table '{table}'. Failed: {errorDetails}", ConsoleColor.Red);
+                    }
+                    else
+                    {
+                        ConsoleUtil.PrintColoredMessage($"✓ Successfully generated all code for table '{table}'", ConsoleColor.Green);
                     }
                 }
 
-                ConsoleUtil.PrintColoredMessage(
-                    "---------------------------------------------------------------" +
-                    Environment.NewLine +
-                    "| Code generation completed. Check the Generated Code folder. |" +
-                    Environment.NewLine +
-                    "---------------------------------------------------------------",
-                    ConsoleColor.Green
-                );
+                Console.WriteLine();
+                Console.WriteLine();
+                Console.WriteLine();
+
+                if (allSuccess)
+                {
+                    ConsoleUtil.PrintColoredMessage(
+                        "╔══════════════════════════════════════════════════════════╗\n" +
+                        "║ ✓ Code generation completed successfully for all tables! ║\n" +
+                        "║     Check the Generated Code folder for results.         ║\n" +
+                        "╚══════════════════════════════════════════════════════════╝",
+                        ConsoleColor.Green
+                    );
+                }
+                else
+                {
+                    ConsoleUtil.PrintColoredMessage(
+                        $"╔══════════════════════════════════════════════════════════╗\n" +
+                        $"║ ❌ Code generation completed with {failedTables.Count} failures          ║\n" +
+                        $"║     Check the following tables: {string.Join(", ", failedTables)} ║\n" +
+                        $"╚══════════════════════════════════════════════════════════╝",
+                        ConsoleColor.Yellow
+                    );
+                }
             }
             catch (Exception ex)
             {
                 GeneralUtil.ErrorLogger(ex);
-                ConsoleUtil.PrintColoredMessage($"An error occurred: {ex.Message}", ConsoleColor.Red);
+                ConsoleUtil.PrintColoredMessage(
+                    "╔══════════════════════════════════════════════════════════╗\n" +
+                    "║ ❌ CRITICAL ERROR: Code generation process failed!        ║\n" +
+                    $"║     Error: {ex.Message.PadRight(40)} ║\n" +
+                    "╚══════════════════════════════════════════════════════════╝",
+                    ConsoleColor.Red
+                );
             }
         }
 

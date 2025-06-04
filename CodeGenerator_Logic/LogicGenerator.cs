@@ -426,9 +426,9 @@ return null;
 ";
         }
 
-        private static string GetCountMethod()
+        private static string CountMethod()
         {
-            return $@"        public static async Task<int> Get{FormattedTNPluralize}CountAsync()
+            return $@"        public static async Task<int> {FormattedTNPluralize}CountAsync()
         {{
             return await {DataClsName}.{FormattedTNPluralize}CountAsync();
         }}
@@ -459,7 +459,7 @@ return null;
 ";
             string Count = $@"        public static int {FormattedTNPluralize}Count()
         {{
-            return Get{FormattedTNPluralize}CountAsync().GetAwaiter().GetResult();
+            return {FormattedTNPluralize}CountAsync().GetAwaiter().GetResult();
         }}
 
 ";
@@ -611,7 +611,7 @@ return null;
                 blCode.Append(IsExistByPersonIdMethod());
             }
 
-            blCode.Append(GetCountMethod());
+            blCode.Append(CountMethod());
             blCode.Append(DeleteMethod());
             blCode.Append(SynchronousWrappers());
             blCode.Append(Closing());
@@ -620,5 +620,4 @@ return null;
         }
 
     }
-
 }
