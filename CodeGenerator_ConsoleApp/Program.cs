@@ -1,28 +1,27 @@
 ﻿using CodeGenerator_Logic;
 using Utilities;
-using static CodeGenerator_Logic.Genrator;
 
 namespace CodeGenerator_ConsoleApp
 {
     internal class Program
     {
-        public static void GenerateCode(enCodeStyle codeStyle = enCodeStyle.AdoStyle)
+        public static void GenerateCode(ClsGenerator.enCodeStyle codeStyle = ClsGenerator.enCodeStyle.AdoStyle)
         {
             try
             {
-                DatabaseUtil.Initialize(DataAccessSettings.ConnectionString());
+                ClsDatabase.Initialize(ClsDataAccessSettings.ConnectionString());
 
-                List<string> tables = DatabaseUtil.GetTableNames();
+                List<string> tables = ClsDatabase.GetTableNames();
 
                 if (tables == null || tables.Count == 0)
                 {
-                    ConsoleUtil.PrintColoredMessage("No tables found in the database.", ConsoleColor.Yellow);
+                    ClsConsole.PrintColoredMessage("No tables found in the database.", ConsoleColor.Yellow);
                     return;
                 }
 
-                ConsoleUtil.PrintColoredMessage("Tables found in the database:", ConsoleColor.DarkCyan);
-                ConsoleUtil.PrintColoredMessage(new string('═', 60), ConsoleColor.DarkCyan);
-                ConsoleUtil.ListConsolePrinting(tables);
+                ClsConsole.PrintColoredMessage("Tables found in the database:", ConsoleColor.DarkCyan);
+                ClsConsole.PrintColoredMessage(new string('═', 60), ConsoleColor.DarkCyan);
+                ClsConsole.ListConsolePrinting(tables);
                 Console.WriteLine("");
 
                 short counter = 0;
@@ -32,42 +31,47 @@ namespace CodeGenerator_ConsoleApp
                 foreach (string table in tables)
                 {
                     counter++;
-                    string formatedCounter = FormatUtil.FormatNumbers(counter, tables.Count);
+                    string formatedCounter = ClsFormat.FormatNumbers(counter, tables.Count);
                     string title = $"╔[{formatedCounter}] Generating Code For: {table}╗";
                     string hyphens = $"╚{new string('═', title.Length - 2)}╝";
 
                     Console.WriteLine();
                     Console.WriteLine();
-                    ConsoleUtil.PrintColoredMessage(title, ConsoleColor.DarkCyan);
-                    ConsoleUtil.PrintColoredMessage(hyphens, ConsoleColor.DarkCyan);
+                    ClsConsole.PrintColoredMessage(title, ConsoleColor.DarkCyan);
+                    ClsConsole.PrintColoredMessage(hyphens, ConsoleColor.DarkCyan);
                     Console.WriteLine();
 
+                    Console.Write($"- Checking Conditions for {table}... ");
+                    bool condSuccess = ClsGenerator.CheckGeneratorConditions(table);
+                    ClsConsole.PrintStatus(condSuccess);
+
                     Console.Write($"- Creating Data Access Layer (DAL) for {table}... ");
-                    bool dalSuccess = DataAccessGenerator.GenerateDalCode(table, codeStyle);
-                    ConsoleUtil.PrintStatus(dalSuccess);
+                    bool dalSuccess = ClsDataAccessGenerator.GenerateDalCode(table, codeStyle);
+                    ClsConsole.PrintStatus(dalSuccess);
 
                     Console.Write($"- Creating Business Logic (BL) for {table}... ");
-                    bool blSuccess = LogicGenerator.GenerateBlCode(table);
-                    ConsoleUtil.PrintStatus(blSuccess);
+                    bool blSuccess = ClsLogicGenerator.GenerateBlCode(table);
+                    ClsConsole.PrintStatus(blSuccess);
 
                     Console.Write($"- Creating API Endpoints for {table}... ");
-                    bool ilSuccess = APIGenerator.GenerateControllerCode(table);
-                    ConsoleUtil.PrintStatus(ilSuccess);
+                    bool ilSuccess = ClsAPIGenerator.GenerateControllerCode(table);
+                    ClsConsole.PrintStatus(ilSuccess);
 
-                    if (!dalSuccess || !blSuccess || !ilSuccess)
+                    if (!dalSuccess || !blSuccess || !ilSuccess || !condSuccess)
                     {
                         failedTables.Add(table);
                         allSuccess = false;
                         string errorDetails =
+                            (condSuccess ? "" : "❌ COND ") +
                             (dalSuccess ? "" : "❌ DAL ") +
                             (blSuccess ? "" : "❌ BL ") +
                             (ilSuccess ? "" : "❌ API");
 
-                        ConsoleUtil.PrintColoredMessage($"❌ Partial generation for table '{table}'. Failed: {errorDetails}", ConsoleColor.Red);
+                        ClsConsole.PrintColoredMessage($"❌ Partial generation for table '{table}'. Failed: {errorDetails}", ConsoleColor.Red);
                     }
                     else
                     {
-                        ConsoleUtil.PrintColoredMessage($"✓ Successfully generated all code for table '{table}'", ConsoleColor.Green);
+                        ClsConsole.PrintColoredMessage($"✓ Successfully generated all code for table '{table}'", ConsoleColor.Green);
                     }
                 }
 
@@ -77,7 +81,7 @@ namespace CodeGenerator_ConsoleApp
 
                 if (allSuccess)
                 {
-                    ConsoleUtil.PrintColoredMessage(
+                    ClsConsole.PrintColoredMessage(
                         "╔══════════════════════════════════════════════════════════╗\n" +
                         "║ ✓ Code generation completed successfully for all tables! ║\n" +
                         "║     Check the Generated Code folder for results.         ║\n" +
@@ -87,7 +91,7 @@ namespace CodeGenerator_ConsoleApp
                 }
                 else
                 {
-                    ConsoleUtil.PrintColoredMessage(
+                    ClsConsole.PrintColoredMessage(
                         $"╔══════════════════════════════════════════════════════════╗\n" +
                         $"║ ❌ Code generation completed with {failedTables.Count} failures          ║\n" +
                         $"║     Check the following tables: {string.Join(", ", failedTables)} ║\n" +
@@ -98,8 +102,8 @@ namespace CodeGenerator_ConsoleApp
             }
             catch (Exception ex)
             {
-                GeneralUtil.ErrorLogger(ex);
-                ConsoleUtil.PrintColoredMessage(
+                ClsUtil.ErrorLogger(ex);
+                ClsConsole.PrintColoredMessage(
                     "╔══════════════════════════════════════════════════════════╗\n" +
                     "║ ❌ CRITICAL ERROR: Code generation process failed!        ║\n" +
                     $"║     Error: {ex.Message.PadRight(40)} ║\n" +
