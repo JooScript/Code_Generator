@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.RegularExpressions;
 using Utilities;
 
 namespace CodeGenerator_Logic
@@ -7,7 +8,7 @@ namespace CodeGenerator_Logic
     {
         #region Support Methods
 
-        private static string ConstructorParameters()
+        private static string _ConstructorParameters()
         {
             var parameters = new List<string>();
 
@@ -17,7 +18,7 @@ namespace CodeGenerator_Logic
             return string.Join(", ", parameters);
         }
 
-        private static string GetClassNameFromColumnName(string colName)
+        private static string _GetClsNameFromColName(string colName)
         {
 
             if (string.IsNullOrEmpty(colName))
@@ -29,25 +30,29 @@ namespace CodeGenerator_Logic
             {
                 if (colName.ToLower() == keyTable.ColumnName.ToLower())
                 {
-                    return ClsFormat.Singularize(keyTable.ReferencedTable);
+                    return FormatHelper.Singularize(keyTable.ReferencedTable);
                 }
             }
 
             return string.Empty;
         }
 
-        private static string GetForeignKeyClassName(string colName)
+        private static string _GetForeignKeyClsName(string colName)
         {
-            return $"Cls{GetClassNameFromColumnName(colName)}";
+            return $"Cls{_GetClsNameFromColName(colName)}";
         }
 
-        private static string ConstructorAssignments()
+        private static string _GetColNameFromProperty(string propertyName) => propertyName.Substring(0, propertyName.Length - 2);
+
+        private static string _GetClsNameFromProperty(string propertyName) => "Cls" + Regex.Replace(_GetForeignKeyClsName(propertyName).Substring(3), "^Tbl?", "", RegexOptions.IgnoreCase);
+
+        private static string _ConstructorAssignments()
         {
             var sb = new StringBuilder();
 
             foreach (var column in columns)
             {
-                string propertyName = ClsFormat.CapitalizeFirstChars(ClsGlobal.FormatId(column.Name));
+                string propertyName = FormatHelper.CapitalizeFirstChars(ClsGlobal.FormatId(column.Name));
                 if (column.IsPrimaryKey)
                 {
                     sb.AppendLine($"            this.{propertyName} = {FormattedTNSingleVar}DTO.Id;");
@@ -57,8 +62,8 @@ namespace CodeGenerator_Logic
 
                 if (column.IsForeignKey && !column.IsNullable)
                 {
-                    string colName = propertyName.Substring(0, propertyName.Length - 2);
-                    string clsName = $"{GetForeignKeyClassName(propertyName)}";
+                    string colName = _GetColNameFromProperty(propertyName);
+                    string clsName = _GetClsNameFromProperty(propertyName);
 
                     sb.AppendLine($"            this.{colName}Info = {clsName}.Find(DTO.Id);");
                 }
@@ -118,7 +123,7 @@ namespace {AppName}_Business.BusinessLogic
                 }
                 first = false;
 
-                sb.Append($"this.{ClsFormat.CapitalizeFirstChars(ClsGlobal.FormatId(column.Name))}");
+                sb.Append($"this.{FormatHelper.CapitalizeFirstChars(ClsGlobal.FormatId(column.Name))}");
 
             }
 
@@ -136,9 +141,9 @@ namespace {AppName}_Business.BusinessLogic
 
             foreach (var column in columns)
             {
-                string csharpType = ClsUtil.ConvertDbTypeToCSharpType(column.DataType);
+                string csharpType = Helper.GetCSharpType(column.DataType);
                 string nullableSymbol = column.IsNullable ? "?" : "";
-                string propertyName = ClsFormat.CapitalizeFirstChars(ClsGlobal.FormatId(column.Name));
+                string propertyName = FormatHelper.CapitalizeFirstChars(ClsGlobal.FormatId(column.Name));
 
                 sb.AppendLine($"        public {csharpType}{nullableSymbol} {propertyName}");
                 sb.AppendLine("        {");
@@ -149,8 +154,9 @@ namespace {AppName}_Business.BusinessLogic
 
                 if (column.IsForeignKey)
                 {
-                    string colName = propertyName.Substring(0, propertyName.Length - 2);
-                    string clsName = $"{GetForeignKeyClassName(propertyName)}";
+                    string colName = _GetColNameFromProperty(propertyName);
+                    string clsName = _GetClsNameFromProperty(propertyName);
+
                     sb.AppendLine($"        public {clsName} {colName}Info");
                     sb.AppendLine("        {");
                     sb.AppendLine("            get;");
@@ -165,9 +171,9 @@ namespace {AppName}_Business.BusinessLogic
 
         private static string ParameterizedConstructor()
         {
-            return $@"        public {LogicClsName}({ConstructorParameters()})
+            return $@"        public {LogicClsName}({_ConstructorParameters()})
         {{
-{ConstructorAssignments()}
+{_ConstructorAssignments()}
         }}
 
 ";
@@ -189,7 +195,7 @@ namespace {AppName}_Business.BusinessLogic
             }}
             catch (Exception ex)
             {{
-                ClsUtil.ErrorLogger(ex);
+                Helper.ErrorLogger(ex);
                 return null;
             }}
         }}
@@ -213,7 +219,7 @@ return null;
             }}
             catch (Exception ex)
             {{
-                ClsUtil.ErrorLogger(ex);
+                Helper.ErrorLogger(ex);
                 return null;
             }}
         }}
@@ -235,7 +241,7 @@ return null;
             }}
             catch (Exception ex)
             {{
-                ClsUtil.ErrorLogger(ex);
+                Helper.ErrorLogger(ex);
                 return null;
             }}
         }}
@@ -259,7 +265,7 @@ return null;
             }}
             catch (Exception ex)
             {{
-                ClsUtil.ErrorLogger(ex);
+                Helper.ErrorLogger(ex);
                 return null;
             }}
         }}
@@ -270,11 +276,11 @@ return null;
         private static string AddNewMethod()
         {
             string PasswordValidatation = "";
-            if (ClsFormat.Singularize(_TableName.ToLower()) == "user")
+            if (FormatHelper.Singularize(_TableName.ToLower()) == "user")
             {
                 PasswordValidatation = @"            if (!ClsValidation.IsValidStrongPassword(this.Password))
             {
-                ClsUtil.ErrorLogger(new Exception(""Password does not meet strength requirements""));
+                Helper.ErrorLogger(new Exception(""Password does not meet strength requirements""));
                 return false;
             }
 ";
@@ -289,7 +295,7 @@ return null;
             }}
             catch (Exception ex)
             {{
-                ClsUtil.ErrorLogger(ex);
+                Helper.ErrorLogger(ex);
                 return false;
             }}
         }}
@@ -300,11 +306,11 @@ return null;
         private static string UpdateMethod()
         {
             string PasswordValidatation = "";
-            if (ClsFormat.Singularize(_TableName.ToLower()) == "user")
+            if (FormatHelper.Singularize(_TableName.ToLower()) == "user")
             {
                 PasswordValidatation = @"            if (!ClsValidation.IsValidStrongPassword(this.Password))
             {
-                ClsUtil.ErrorLogger(new Exception(""Password does not meet strength requirements""));
+                Helper.ErrorLogger(new Exception(""Password does not meet strength requirements""));
                 return false;
             }
 ";
@@ -318,7 +324,7 @@ return null;
             }}
             catch (Exception ex)
             {{
-                ClsUtil.ErrorLogger(ex);
+                Helper.ErrorLogger(ex);
                 return false;
             }}
         }}
@@ -366,7 +372,7 @@ return null;
             }}
             catch (Exception ex)
             {{
-                ClsUtil.ErrorLogger(ex);
+                Helper.ErrorLogger(ex);
                 throw;
             }}
         }}
@@ -397,7 +403,7 @@ return null;
             }}
             catch (Exception ex)
             {{
-                ClsUtil.ErrorLogger(ex);
+                Helper.ErrorLogger(ex);
                 return false;
             }}
         }}
@@ -418,7 +424,7 @@ return null;
             }}
             catch (Exception ex)
             {{
-                ClsUtil.ErrorLogger(ex);
+                Helper.ErrorLogger(ex);
                 return false;
             }}
         }}
@@ -526,13 +532,13 @@ return null;
             Wrapper.Append(StartRegion);
             Wrapper.Append(Find);
 
-            if (ClsFormat.Singularize(_TableName.ToLower()) == "user")
+            if (FormatHelper.Singularize(_TableName.ToLower()) == "user")
             {
                 Wrapper.Append(FindByUserNameAndPassword);
                 Wrapper.Append(FindByPersonID);
             }
 
-            if (ClsFormat.Singularize(_TableName.ToLower()) == "country")
+            if (FormatHelper.Singularize(_TableName.ToLower()) == "country")
             {
                 Wrapper.Append(FindByCountryName);
             }
@@ -541,7 +547,7 @@ return null;
             Wrapper.Append(GetAll);
             Wrapper.Append(IsExist);
 
-            if (ClsFormat.Singularize(_TableName.ToLower()) == "user")
+            if (FormatHelper.Singularize(_TableName.ToLower()) == "user")
             {
                 Wrapper.Append(IsExistsByUserName);
                 Wrapper.Append(IsExistsByPersonID);
@@ -562,6 +568,47 @@ return null;
 
         #endregion
 
+        #region Interfaces
+
+        private static string Interface()
+        {
+            return $@"    public interface {LogicInterfaceName}
+    {{
+        public static async Task<ClsBrand> FindAsync(int {TableId});
+        public static async Task<List<BrandDTO>> GetAllAsync(int pageNumber = 1, int pageSize = 50);
+        public async Task<bool> SaveAsync();
+        public bool Delete(int {TableId});
+        public static async Task<bool> IsExistsAsync(int {TableId});
+        public static async Task<int> CountAsync();
+        public static async Task<bool> DeleteAsync(int {TableId})
+    }}";
+        }
+
+        public static bool GenerateInterfaceCode(string tableName, string? folderPath = null)
+        {
+            if (tableName == null)
+            {
+                return false;
+            }
+            else
+            {
+                TableName = tableName;
+            }
+
+            if (string.IsNullOrEmpty(folderPath))
+            {
+                folderPath = Path.Combine(BasicPath, "Interfaces");
+            }
+
+            StringBuilder blCode = new StringBuilder();
+
+            blCode.Append(Interface());
+
+            return FileHelper.StoreToFile(blCode.ToString(), $"{LogicInterfaceName}.cs", folderPath, true);
+        }
+
+        #endregion
+
         public static bool GenerateBlCode(string tableName, string? folderPath = null)
         {
             if (tableName == null)
@@ -575,8 +622,7 @@ return null;
 
             if (string.IsNullOrEmpty(folderPath))
             {
-                folderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-                    $"Code Generator\\{ClsDataAccessSettings.AppName()}\\BusinessLogic\\Basic");
+                folderPath = Path.Combine(BasicPath, "BusinessLogic");
             }
 
             StringBuilder blCode = new StringBuilder();
@@ -588,13 +634,13 @@ return null;
             blCode.Append(ParameterizedConstructor());
             blCode.Append(FindMethod());
 
-            if (ClsFormat.Singularize(_TableName.ToLower()) == "user")
+            if (FormatHelper.Singularize(_TableName.ToLower()) == "user")
             {
                 blCode.Append(FindByUsernameAndPasswordMethod());
                 blCode.Append(FindByPersonIDMethod());
             }
 
-            if (ClsFormat.Singularize(_TableName.ToLower()) == "country")
+            if (FormatHelper.Singularize(_TableName.ToLower()) == "country")
             {
                 blCode.Append(FindByCountryNameMethod());
             }
@@ -605,7 +651,7 @@ return null;
             blCode.Append(GetAllMethod());
             blCode.Append(IsExistMethod());
 
-            if (ClsFormat.Singularize(_TableName.ToLower()) == "user")
+            if (FormatHelper.Singularize(_TableName.ToLower()) == "user")
             {
                 blCode.Append(IsExistByUsernameMethod());
                 blCode.Append(IsExistByPersonIdMethod());
@@ -616,7 +662,7 @@ return null;
             blCode.Append(SynchronousWrappers());
             blCode.Append(Closing());
 
-            return ClsFile.StoreToFile(blCode.ToString(), $"{LogicClsName}.cs", folderPath, true);
+            return FileHelper.StoreToFile(blCode.ToString(), $"{LogicClsName}.cs", folderPath, true) && GenerateInterfaceCode(tableName);
         }
 
     }

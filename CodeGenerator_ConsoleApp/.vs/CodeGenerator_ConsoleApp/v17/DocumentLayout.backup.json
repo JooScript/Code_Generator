@@ -3,7 +3,10 @@
   "WorkspaceRootPath": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_ConsoleApp\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{9BC790BF-FA30-479D-A488-C87055FA4726}|..\\CodeGenerator_Logic\\CodeGenerator_Logic.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\codegenerator_logic\\clslogicgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{AD0F2CCC-7F18-02E9-72B1-DDF084A5174D}|..\\..\\CS_Utilities\\C# Utilities\\Utilities.csproj|c:\\users\\yousef\\documents\\github\\cs_utilities\\c# utilities\\utilities\\databasehelper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BC790BF-FA30-479D-A488-C87055FA4726}|..\\CodeGenerator_Logic\\CodeGenerator_Logic.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\codegenerator_logic\\clsgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{0137B1AD-C60B-4C67-AC97-620431DC8640}|CodeGenerator_ConsoleApp.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\codegenerator_consoleapp\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -26,27 +29,40 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "ClsLogicGenerator.cs",
-              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Logic\\ClsLogicGenerator.cs",
-              "RelativeDocumentMoniker": "..\\CodeGenerator_Logic\\ClsLogicGenerator.cs",
-              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Logic\\ClsLogicGenerator.cs*",
-              "RelativeToolTip": "..\\CodeGenerator_Logic\\ClsLogicGenerator.cs*",
-              "ViewState": "AgIAABIBAAAAAAAAAAAAADABAABHAAAAAAAAAA==",
+              "Title": "DatabaseHelper.cs",
+              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\CS_Utilities\\C# Utilities\\Utilities\\DatabaseHelper.cs",
+              "RelativeDocumentMoniker": "..\\..\\CS_Utilities\\C# Utilities\\Utilities\\DatabaseHelper.cs",
+              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\CS_Utilities\\C# Utilities\\Utilities\\DatabaseHelper.cs*",
+              "RelativeToolTip": "..\\..\\CS_Utilities\\C# Utilities\\Utilities\\DatabaseHelper.cs*",
+              "ViewState": "AgIAADkBAAAAAAAAAAAYwE8BAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-21T18:56:00.818Z",
+              "WhenOpened": "2025-06-22T21:23:04.983Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
+              "Title": "ClsGenerator.cs",
+              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Logic\\ClsGenerator.cs",
+              "RelativeDocumentMoniker": "..\\CodeGenerator_Logic\\ClsGenerator.cs",
+              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_Logic\\ClsGenerator.cs",
+              "RelativeToolTip": "..\\CodeGenerator_Logic\\ClsGenerator.cs",
+              "ViewState": "AgIAAGQAAAAAAAAAAAA4wBABAABdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-22T21:08:49.344Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_ConsoleApp\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
               "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\CodeGenerator_ConsoleApp\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAHgAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAFoAAAAAAAAAAAAgwIEAAAAxAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-05-30T13:45:07.886Z",
+              "WhenOpened": "2025-06-22T21:08:01.059Z",
               "EditorCaption": ""
             }
           ]

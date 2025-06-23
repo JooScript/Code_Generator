@@ -55,8 +55,8 @@ namespace CodeGenerator_Logic
                     continue;
                 }
 
-                string propertyName = ClsFormat.CapitalizeFirstChars(ClsGlobal.FormatId(column.Name));
-                string csharpType = ClsUtil.ConvertDbTypeToCSharpType(column.DataType);
+                string propertyName = FormatHelper.CapitalizeFirstChars(ClsGlobal.FormatId(column.Name));
+                string csharpType = Helper.GetCSharpType(column.DataType);
 
                 switch (csharpType)
                 {
@@ -88,7 +88,7 @@ namespace CodeGenerator_Logic
 
             foreach (var column in columns)
             {
-                string propertyName = ClsFormat.CapitalizeFirstChars(ClsGlobal.FormatId(column.Name));
+                string propertyName = FormatHelper.CapitalizeFirstChars(ClsGlobal.FormatId(column.Name));
 
                 if (column.IsPrimaryKey)
                 {
@@ -283,8 +283,7 @@ namespace {AppName}_API.Controllers
 
             if (string.IsNullOrEmpty(folderPath))
             {
-                folderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-                    $"Code Generator\\{ClsDataAccessSettings.AppName()}\\Controllers");
+                folderPath = Path.Combine(BasicPath, "Controllers");
             }
 
             StringBuilder controllerCode = new StringBuilder();
@@ -300,7 +299,7 @@ namespace {AppName}_API.Controllers
             controllerCode.Append(Closing());
 
             string fileName = $"{ControllerName()}.cs";
-            return ClsFile.StoreToFile(controllerCode.ToString(), fileName, folderPath, true);
+            return FileHelper.StoreToFile(controllerCode.ToString(), fileName, folderPath, true);
         }
 
     }
