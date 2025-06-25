@@ -1,41 +1,44 @@
-﻿using System.Diagnostics;
-using Utilities;
+﻿using Utilities;
 
 namespace CodeGenerator_Logic
 {
     public class ClsGenerator
     {
-        protected static string _TableName;
-        protected static string TableId;
-        protected static List<DatabaseHelper.ColumnInfo> columns;
-        protected static List<DatabaseHelper.ForeignKeyInfo> foreignKeys;
-
+        public ClsGenerator()
+        {
+            DatabaseHelper.Initialize(ClsDataAccessSettings.ConnectionString());
+        }
 
         #region Properties
 
         public static string TableName
         {
-            set
+            get; set;
+        }
+
+        protected static string TableId
+        {
+            get
             {
-                _TableName = value;
-                DatabaseHelper.Initialize(ClsDataAccessSettings.ConnectionString());
-                columns = DatabaseHelper.GetTableColumns(_TableName);
-                TableId = ClsGlobal.FormatId(DatabaseHelper.GetFirstPrimaryKey(_TableName));
-                foreignKeys = DatabaseHelper.GetForeignKeys(_TableName);
-                AppName = ClsDataAccessSettings.AppName();
+                return ClsGlobal.FormatId(DatabaseHelper.GetFirstPrimaryKey(TableName));
             }
+        }
+
+        protected static List<DatabaseHelper.ForeignKeyInfo> foreignKeys
+        {
+            get { return DatabaseHelper.GetForeignKeys(TableName); }
         }
 
         public static string WithoutPrefixTN
         {
             get
             {
-                if (string.IsNullOrEmpty(_TableName))
+                if (string.IsNullOrEmpty(TableName))
                 {
                     return null;
                 }
 
-                string tableName = _TableName;
+                string tableName = TableName;
 
                 if (tableName.StartsWith("Tbl", StringComparison.OrdinalIgnoreCase))
                 {
@@ -55,7 +58,7 @@ namespace CodeGenerator_Logic
         {
             get
             {
-                if (string.IsNullOrEmpty(_TableName))
+                if (string.IsNullOrEmpty(TableName))
                 {
                     return null;
                 }
@@ -68,7 +71,7 @@ namespace CodeGenerator_Logic
         {
             get
             {
-                if (string.IsNullOrEmpty(_TableName))
+                if (string.IsNullOrEmpty(TableName))
                 {
                     return null;
                 }
@@ -81,7 +84,7 @@ namespace CodeGenerator_Logic
         {
             get
             {
-                if (string.IsNullOrEmpty(_TableName))
+                if (string.IsNullOrEmpty(TableName))
                 {
                     return null;
                 }
@@ -124,14 +127,17 @@ namespace CodeGenerator_Logic
 
         protected static string AppName
         {
-            set
-            {
-                AppName = value;
-            }
             get
             {
-                DatabaseHelper.Initialize(ClsDataAccessSettings.ConnectionString());
                 return ClsDataAccessSettings.AppName();
+            }
+        }
+
+        protected static List<DatabaseHelper.ColumnInfo> Columns
+        {
+            get
+            {
+                return DatabaseHelper.GetTableColumns(TableName);
             }
         }
 
@@ -175,29 +181,27 @@ namespace CodeGenerator_Logic
                 return false;
             }
 
-            _TableName = tableName;
+            TableName = tableName;
 
             try
             {
-                DatabaseHelper.Initialize(ClsDataAccessSettings.ConnectionString());
-
-                if (!DatabaseHelper.TableExists(_TableName))
+                if (!DatabaseHelper.TableExists(TableName))
                 {
-                    Helper.ErrorLogger(new Exception($"Table '{_TableName}' does not exist in the database."));
+                    Helper.ErrorLogger(new Exception($"Table '{TableName}' does not exist in the database."));
                     return false;
                 }
 
-                var columns = DatabaseHelper.GetTableColumns(_TableName);
+                var columns = DatabaseHelper.GetTableColumns(TableName);
                 if (columns == null || columns.Count == 0)
                 {
-                    Helper.ErrorLogger(new Exception($"Table '{_TableName}' has no columns."));
+                    Helper.ErrorLogger(new Exception($"Table '{TableName}' has no columns."));
                     return false;
                 }
 
-                List<string> primaryKeys = DatabaseHelper.GetPrimaryKeys(_TableName);
+                List<string> primaryKeys = DatabaseHelper.GetPrimaryKeys(TableName);
                 if (primaryKeys.Count != 1)
                 {
-                    Helper.ErrorLogger(new Exception($"Table '{_TableName}' must have exactly one primary key to generate code. Found {primaryKeys.Count}."));
+                    Helper.ErrorLogger(new Exception($"Table '{TableName}' must have exactly one primary key to generate code. Found {primaryKeys.Count}."));
                     return false;
                 }
 
@@ -206,19 +210,19 @@ namespace CodeGenerator_Logic
 
                 if (primaryKeyColumn == null)
                 {
-                    Helper.ErrorLogger(new Exception($"Primary key '{primaryKey}' not found in table columns for table '{_TableName}'."));
+                    Helper.ErrorLogger(new Exception($"Primary key '{primaryKey}' not found in table columns for table '{TableName}'."));
                     return false;
                 }
 
                 if (!primaryKeyColumn.IsIdentity)
                 {
-                    Helper.ErrorLogger(new Exception($"Primary key '{primaryKey}' in table '{_TableName}' must be an identity column to generate code."));
+                    Helper.ErrorLogger(new Exception($"Primary key '{primaryKey}' in table '{TableName}' must be an identity column to generate code."));
                     return false;
                 }
 
                 if (primaryKeyColumn.DataType != "int" && primaryKeyColumn.DataType != "bigint")
                 {
-                    Helper.ErrorLogger(new Exception($"Primary key '{primaryKey}' in table '{_TableName}' must be of type 'int' or 'bigint' to generate code. Found '{primaryKeyColumn.DataType}'."));
+                    Helper.ErrorLogger(new Exception($"Primary key '{primaryKey}' in table '{TableName}' must be of type 'int' or 'bigint' to generate code. Found '{primaryKeyColumn.DataType}'."));
                     return false;
                 }
 
@@ -226,7 +230,7 @@ namespace CodeGenerator_Logic
             }
             catch (Exception ex)
             {
-                Helper.ErrorLogger(new Exception($"Error while validating table '{_TableName}' for code generation: {ex.Message}", ex));
+                Helper.ErrorLogger(new Exception($"Error while validating table '{TableName}' for code generation: {ex.Message}", ex));
                 return false;
             }
         }
@@ -268,9 +272,8 @@ namespace CodeGenerator_Logic
  ";
         }
 
-        public static bool GenerateAllLayers(string tableName, ClsDataAccessGenerator.enCodeStyle codeStyle = ClsDataAccessGenerator.enCodeStyle.AdoStyle) => CheckGeneratorConditions(tableName) && ClsDataAccessGenerator.GenerateDalCode(tableName, codeStyle) && ClsLogicGenerator.GenerateBlCode(tableName) && ClsAPIGenerator.GenerateControllerCode(tableName) && GenerateScaffold();
+        public static bool GenerateAllLayers(string tableName, ClsDataAccessGenerator.enCodeStyle codeStyle = ClsDataAccessGenerator.enCodeStyle.AdoStyle) => CheckGeneratorConditions(tableName) && ClsDataAccessGenerator.GenerateDalCode(tableName, codeStyle) && ClsLogicGenerator.GenerateBlCode(tableName) && ClsAPIGenerator.GenerateControllerCode(tableName);
 
-        public static bool GenerateScaffold(string path = null) => DatabaseHelper.ScaffoldDbContext(Path.Combine(path == null ? BasicPath : path, "Scaffold"));
 
     }
 }

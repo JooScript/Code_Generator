@@ -48,7 +48,7 @@ namespace CodeGenerator_Logic
             StringBuilder sb = new StringBuilder();
             string prefix = forUpdate ? "updated" : "new";
 
-            foreach (var column in columns)
+            foreach (var column in Columns)
             {
                 if (column.IsNullable || column.IsIdentity)
                 {
@@ -86,7 +86,7 @@ namespace CodeGenerator_Logic
         {
             var sb = new StringBuilder();
 
-            foreach (var column in columns)
+            foreach (var column in Columns)
             {
                 string propertyName = FormatHelper.CapitalizeFirstChars(ClsGlobal.FormatId(column.Name));
 

@@ -16,7 +16,7 @@ namespace CodeGenerator_Logic
         {
             var sb = new StringBuilder();
 
-            foreach (var column in columns)
+            foreach (var column in Columns)
             {
                 string propertyName = FormatHelper.CapitalizeFirstChars(ClsGlobal.FormatId(column.Name));
 
@@ -37,7 +37,7 @@ namespace CodeGenerator_Logic
             var parameters = new List<string>();
             parameters.Add($"int Id");
 
-            foreach (var column in columns)
+            foreach (var column in Columns)
             {
                 if (column.IsPrimaryKey)
                 {
@@ -66,7 +66,7 @@ namespace CodeGenerator_Logic
         {
             var sb = new StringBuilder();
 
-            foreach (var column in columns)
+            foreach (var column in Columns)
             {
                 string csharpType = Helper.GetCSharpType(column.DataType);
                 string nullableSymbol = column.IsNullable ? "?" : "";
@@ -131,7 +131,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    IF EXISTS(SELECT 1 FROM [{_TableName}] WHERE [{TableId}] = @{TableId})
+    IF EXISTS(SELECT 1 FROM [{TableName}] WHERE [{TableId}] = @{TableId})
         RETURN 1;
     ELSE
         RETURN 0;
@@ -149,7 +149,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    SELECT COUNT(*) AS TotalCount FROM [{_TableName}];
+    SELECT COUNT(*) AS TotalCount FROM [{TableName}];
 END";
 
             return DatabaseHelper.CreateStoredProcedure(procedureName, procedureBody);
@@ -166,7 +166,7 @@ AS
 BEGIN
     
     SELECT {GetColumnList()}
-    FROM [{_TableName}]
+    FROM [{TableName}]
     ORDER BY [{TableId}]
     OFFSET (@PageNumber - 1) * @PageSize ROWS
     FETCH NEXT @PageSize ROWS ONLY;
@@ -185,7 +185,7 @@ AS
 BEGIN
     
     SELECT {GetColumnList()}
-    FROM [{_TableName}]
+    FROM [{TableName}]
     WHERE [{TableId}] = @{TableId};
 END";
 
@@ -201,7 +201,7 @@ END";
 AS
 BEGIN
     
-    INSERT INTO [{_TableName}] (
+    INSERT INTO [{TableName}] (
         {GetInsertColumnList()}
     )
     VALUES (
@@ -223,7 +223,7 @@ END";
 AS
 BEGIN
     
-    UPDATE [{_TableName}]
+    UPDATE [{TableName}]
     SET
 {GetUpdateSetClause()}
     WHERE [{TableId}] = @{TableId};
@@ -242,7 +242,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    DELETE FROM [{_TableName}]
+    DELETE FROM [{TableName}]
     WHERE [{TableId}] = @{TableId};
     
     SELECT @@ROWCOUNT;
@@ -260,7 +260,7 @@ END";
 AS
 BEGIN  
     SELECT {GetColumnList()}
-    FROM [{_TableName}]
+    FROM [{TableName}]
     WHERE Name = @CountryName;
 END";
 
@@ -276,7 +276,7 @@ END";
 AS
 BEGIN
     SELECT {GetColumnList()}
-    FROM [{_TableName}]
+    FROM [{TableName}]
     WHERE PersonId = @PersonId;
 END";
 
@@ -295,7 +295,7 @@ BEGIN
     SET NOCOUNT ON;
     
     SELECT {GetColumnList()}
-    FROM [{_TableName}]
+    FROM [{TableName}]
     WHERE Username = @Username AND Password = @Password;
 END";
 
@@ -312,7 +312,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    IF EXISTS(SELECT 1 FROM [{_TableName}] WHERE Username = @Username)
+    IF EXISTS(SELECT 1 FROM [{TableName}] WHERE Username = @Username)
         SELECT 1 AS Result;
     ELSE
         SELECT 0 AS Result;
@@ -331,7 +331,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    IF EXISTS(SELECT 1 FROM [{_TableName}] WHERE PersonId = @PersonId)
+    IF EXISTS(SELECT 1 FROM [{TableName}] WHERE PersonId = @PersonId)
         SELECT 1 AS Result;
     ELSE
         SELECT 0 AS Result;
@@ -352,7 +352,7 @@ END";
             allSuccess &= IsExistsSP();
             allSuccess &= CountSP();
 
-            if (FormatHelper.Singularize(_TableName.ToLower()) == "user")
+            if (FormatHelper.Singularize(TableName.ToLower()) == "user")
             {
                 allSuccess &= FindByPersonIdSP();
                 allSuccess &= FindByUsernameAndPasswordSP();
@@ -360,7 +360,7 @@ END";
                 allSuccess &= IsExistsByPersonIdSP();
             }
 
-            if (FormatHelper.Singularize(_TableName.ToLower()) == "country")
+            if (FormatHelper.Singularize(TableName.ToLower()) == "country")
             {
                 allSuccess &= FindByCountryNameSP();
             }
@@ -372,24 +372,24 @@ END";
 
         private static string GetColumnList()
         {
-            return string.Join(", ", columns.Select(c => $"[{c.Name}]"));
+            return string.Join(", ", Columns.Select(c => $"[{c.Name}]"));
         }
 
         private static string GetInsertColumnList()
         {
-            var columns = ClsGenerator.columns.Where(c => !c.IsPrimaryKey);
+            var columns = ClsGenerator.Columns.Where(c => !c.IsPrimaryKey);
             return string.Join(",\n            ", columns.Select(c => $"[{c.Name}]"));
         }
 
         private static string GetInsertValuesList()
         {
-            var columns = ClsGenerator.columns.Where(c => !c.IsIdentity);
+            var columns = ClsGenerator.Columns.Where(c => !c.IsIdentity);
             return string.Join(",\n            ", columns.Select(c => $"@{c.Name}"));
         }
 
         private static string GetUpdateSetClause()
         {
-            var columns = ClsGenerator.columns.Where(c => !c.IsPrimaryKey);
+            var columns = ClsGenerator.Columns.Where(c => !c.IsPrimaryKey);
             return string.Join(",\n            ", columns.Select(c => $"[{c.Name}] = @{c.Name}"));
         }
 
@@ -406,7 +406,7 @@ END";
                 parameters.Add($"        @{TableId} INT");
             }
 
-            foreach (var column in columns)
+            foreach (var column in Columns)
             {
                 if (column.IsPrimaryKey)
                 {
@@ -947,7 +947,7 @@ namespace {AppName}_Data.DataAccess
         {{");
 
             // Add validation logic for required fields
-            foreach (var column in columns)
+            foreach (var column in Columns)
             {
                 if (!column.IsNullable && !column.IsIdentity && column.Name.ToLower() != TableId.ToLower())
                 {
@@ -1004,7 +1004,7 @@ namespace {AppName}_Data.DataAccess
             var sb = new StringBuilder();
             bool firstLine = true;
 
-            foreach (var column in columns)
+            foreach (var column in Columns)
             {
                 if (!firstLine)
                 {
@@ -1049,7 +1049,7 @@ namespace {AppName}_Data.DataAccess
         {
             var sb = new StringBuilder();
 
-            foreach (var column in columns)
+            foreach (var column in Columns)
             {
                 if (column.IsIdentity)
                 {
@@ -1095,13 +1095,13 @@ namespace {AppName}_Data.DataAccess
             dalCode.Append(ADOTopUsing());
             dalCode.Append(ADOGetByIDMethod());
 
-            if (FormatHelper.Singularize(_TableName.ToLower()) == "user")
+            if (FormatHelper.Singularize(TableName.ToLower()) == "user")
             {
                 dalCode.Append(ADOGetByUsernameAndPasswordMethod());
                 dalCode.Append(ADOGetByPersonIDMethod());
             }
 
-            if (FormatHelper.Singularize(_TableName.ToLower()) == "country")
+            if (FormatHelper.Singularize(TableName.ToLower()) == "country")
             {
                 dalCode.Append(ADOGetByCountryNameMethod());
             }
@@ -1111,7 +1111,7 @@ namespace {AppName}_Data.DataAccess
             dalCode.Append(ADOGetAllMethod());
             dalCode.Append(ADOIsExistMethod());
 
-            if (FormatHelper.Singularize(_TableName.ToLower()) == "user")
+            if (FormatHelper.Singularize(TableName.ToLower()) == "user")
             {
                 dalCode.Append(ADOIsExistByUsernameMethod());
                 dalCode.Append(ADOIsExistByPersonIdMethod());
@@ -1135,7 +1135,7 @@ namespace {AppName}_Data.DataAccess
 
         private static string tResultsForGetByID()
         {
-            var columnStrings = columns.Select(column =>
+            var columnStrings = Columns.Select(column =>
             {
                 string dataType = Helper.GetCSharpType(column.DataType);
                 string isNullable = column.IsNullable ? "?" : string.Empty;
@@ -1147,14 +1147,14 @@ namespace {AppName}_Data.DataAccess
 
         private static string InfoForGetByID()
         {
-            if (columns == null || !columns.Any())
+            if (Columns == null || !Columns.Any())
             {
                 return string.Empty;
             }
 
             var resultBuilder = new StringBuilder();
 
-            foreach (var column in columns)
+            foreach (var column in Columns)
             {
                 string formattedName = FormatHelper.CapitalizeFirstChars(ClsGlobal.FormatId(column.Name));
                 string csharpType = Helper.GetCSharpType(column.DataType);
@@ -1179,14 +1179,14 @@ namespace {AppName}_Data.DataAccess
 
         private static string returnsForGetByID()
         {
-            if (columns == null || !columns.Any())
+            if (Columns == null || !Columns.Any())
             {
                 return string.Empty;
             }
 
             var resultBuilder = new StringBuilder();
 
-            foreach (var column in columns)
+            foreach (var column in Columns)
             {
                 string formattedName = FormatHelper.CapitalizeFirstChars(ClsGlobal.FormatId(column.Name));
                 resultBuilder.AppendLine($"{FormattedTNSingleVar.ToLower()}Info.{formattedName},");
@@ -1206,7 +1206,7 @@ namespace {AppName}_Data.DataAccess
 
         private static string ParamatersForAddNew()
         {
-            var columnStrings = columns
+            var columnStrings = Columns
                 .Where(column => !column.IsIdentity)
                 .Select(column =>
                 {
@@ -1220,14 +1220,14 @@ namespace {AppName}_Data.DataAccess
 
         private static string ObjectForAddNew()
         {
-            if (columns == null || !columns.Any())
+            if (Columns == null || !Columns.Any())
             {
                 return string.Empty;
             }
 
             var resultBuilder = new StringBuilder();
 
-            foreach (var column in columns)
+            foreach (var column in Columns)
             {
                 string formattedName = FormatHelper.CapitalizeFirstChars(ClsGlobal.FormatId(column.Name));
 
@@ -1262,7 +1262,7 @@ namespace {AppName}_Data.DataAccess
 
         private static string ObjectForUpdate()
         {
-            if (columns == null || !columns.Any())
+            if (Columns == null || !Columns.Any())
             {
                 return string.Empty;
             }
@@ -1270,7 +1270,7 @@ namespace {AppName}_Data.DataAccess
             var resultBuilder = new StringBuilder();
             bool firstLine = true;
 
-            foreach (var column in columns)
+            foreach (var column in Columns)
             {
                 if (column.IsPrimaryKey)
                 {
@@ -1675,14 +1675,14 @@ namespace {AppName}_Data.DataAccess
 
             dalCode.Append(EFTopUsing() + EFGetAllMethod() + EFGetByIDMethod());
 
-            if (FormatHelper.Singularize(_TableName.ToLower()) == "user")
+            if (FormatHelper.Singularize(TableName.ToLower()) == "user")
             {
                 dalCode.Append(EFGetByPersonIDMethod() + EFGetByUsernameAndPasswordMethod());
             }
 
             dalCode.Append(EFAddNewMethod() + EFUpdateMethod() + EFDeleteMethod() + EFIsExistMethod());
 
-            if (FormatHelper.Singularize(_TableName.ToLower()) == "user")
+            if (FormatHelper.Singularize(TableName.ToLower()) == "user")
             {
                 dalCode.Append(EFIsExistByUsernameMethod() + EFIsExistByPersonIdMethod());
             }

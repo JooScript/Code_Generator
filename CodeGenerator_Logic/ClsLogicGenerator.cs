@@ -50,7 +50,7 @@ namespace CodeGenerator_Logic
         {
             var sb = new StringBuilder();
 
-            foreach (var column in columns)
+            foreach (var column in Columns)
             {
                 string propertyName = FormatHelper.CapitalizeFirstChars(ClsGlobal.FormatId(column.Name));
                 if (column.IsPrimaryKey)
@@ -115,7 +115,7 @@ namespace {AppName}_Business.BusinessLogic
             sb.Append("                return (new " + FormattedTNSingle + "DTO(");
 
             bool first = true;
-            foreach (var column in columns)
+            foreach (var column in Columns)
             {
                 if (!first)
                 {
@@ -139,7 +139,7 @@ namespace {AppName}_Business.BusinessLogic
         {
             var sb = new StringBuilder();
 
-            foreach (var column in columns)
+            foreach (var column in Columns)
             {
                 string csharpType = Helper.GetCSharpType(column.DataType);
                 string nullableSymbol = column.IsNullable ? "?" : "";
@@ -276,7 +276,7 @@ return null;
         private static string AddNewMethod()
         {
             string PasswordValidatation = "";
-            if (FormatHelper.Singularize(_TableName.ToLower()) == "user")
+            if (FormatHelper.Singularize(TableName.ToLower()) == "user")
             {
                 PasswordValidatation = @"            if (!ClsValidation.IsValidStrongPassword(this.Password))
             {
@@ -306,7 +306,7 @@ return null;
         private static string UpdateMethod()
         {
             string PasswordValidatation = "";
-            if (FormatHelper.Singularize(_TableName.ToLower()) == "user")
+            if (FormatHelper.Singularize(TableName.ToLower()) == "user")
             {
                 PasswordValidatation = @"            if (!ClsValidation.IsValidStrongPassword(this.Password))
             {
@@ -532,13 +532,13 @@ return null;
             Wrapper.Append(StartRegion);
             Wrapper.Append(Find);
 
-            if (FormatHelper.Singularize(_TableName.ToLower()) == "user")
+            if (FormatHelper.Singularize(TableName.ToLower()) == "user")
             {
                 Wrapper.Append(FindByUserNameAndPassword);
                 Wrapper.Append(FindByPersonID);
             }
 
-            if (FormatHelper.Singularize(_TableName.ToLower()) == "country")
+            if (FormatHelper.Singularize(TableName.ToLower()) == "country")
             {
                 Wrapper.Append(FindByCountryName);
             }
@@ -547,7 +547,7 @@ return null;
             Wrapper.Append(GetAll);
             Wrapper.Append(IsExist);
 
-            if (FormatHelper.Singularize(_TableName.ToLower()) == "user")
+            if (FormatHelper.Singularize(TableName.ToLower()) == "user")
             {
                 Wrapper.Append(IsExistsByUserName);
                 Wrapper.Append(IsExistsByPersonID);
@@ -634,13 +634,13 @@ return null;
             blCode.Append(ParameterizedConstructor());
             blCode.Append(FindMethod());
 
-            if (FormatHelper.Singularize(_TableName.ToLower()) == "user")
+            if (FormatHelper.Singularize(TableName.ToLower()) == "user")
             {
                 blCode.Append(FindByUsernameAndPasswordMethod());
                 blCode.Append(FindByPersonIDMethod());
             }
 
-            if (FormatHelper.Singularize(_TableName.ToLower()) == "country")
+            if (FormatHelper.Singularize(TableName.ToLower()) == "country")
             {
                 blCode.Append(FindByCountryNameMethod());
             }
@@ -651,7 +651,7 @@ return null;
             blCode.Append(GetAllMethod());
             blCode.Append(IsExistMethod());
 
-            if (FormatHelper.Singularize(_TableName.ToLower()) == "user")
+            if (FormatHelper.Singularize(TableName.ToLower()) == "user")
             {
                 blCode.Append(IsExistByUsernameMethod());
                 blCode.Append(IsExistByPersonIdMethod());
