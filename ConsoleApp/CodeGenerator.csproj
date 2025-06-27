@@ -8,8 +8,18 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\CS_Utilities\Utilities.csproj" />
-	  <ProjectReference Include="..\Bl\Bl.csproj" />
+		<None Remove="appsettings.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="appsettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\CS_Utilities\Utilities.csproj" />
+		<ProjectReference Include="..\Bl\Bl.csproj" />
 	</ItemGroup>
 
 </Project>

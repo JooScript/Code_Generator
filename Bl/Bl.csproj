@@ -24,7 +24,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\CS_Utilities\Utilities.csproj" />
-		<ProjectReference Include="..\..\CS_Utilities\Utilities.csproj" />
 	</ItemGroup>
 
 </Project>

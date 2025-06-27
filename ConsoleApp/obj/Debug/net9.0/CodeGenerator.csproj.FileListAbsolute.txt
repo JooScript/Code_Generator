@@ -5,7 +5,6 @@ C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\obj\Debug\net9.0\Code
 C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\obj\Debug\net9.0\CodeGenerator.csproj.CoreCompileInputs.cache
 C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\obj\Debug\net9.0\CodeGenerator.sourcelink.json
 C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\bin\Debug\net9.0\CodeGenerator.exe
-C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\bin\Debug\net9.0\appsettings.json
 C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\bin\Debug\net9.0\CodeGenerator.deps.json
 C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\bin\Debug\net9.0\CodeGenerator.runtimeconfig.json
 C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\bin\Debug\net9.0\CodeGenerator.dll
@@ -118,3 +117,4 @@ C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\obj\Debug\net9.0\Code
 C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\obj\Debug\net9.0\ref\CodeGenerator.dll
 C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\bin\Debug\net9.0\Utilities.dll
 C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\bin\Debug\net9.0\Utilities.pdb
+C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\bin\Debug\net9.0\appsettings.json

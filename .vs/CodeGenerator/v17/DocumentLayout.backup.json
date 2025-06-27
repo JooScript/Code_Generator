@@ -3,6 +3,14 @@
   "WorkspaceRootPath": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{0C51CF40-0443-274F-1874-15CF23F7A10D}|ConsoleApp\\CodeGenerator.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\consoleapp\\codegenerator.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{0C51CF40-0443-274F-1874-15CF23F7A10D}|ConsoleApp\\CodeGenerator.csproj|solutionrelative:consoleapp\\codegenerator.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{07C109ED-B606-EED1-1820-6220CC6F7079}|Bl\\Bl.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\bl\\bl.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{07C109ED-B606-EED1-1820-6220CC6F7079}|Bl\\Bl.csproj|solutionrelative:bl\\bl.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{07C109ED-B606-EED1-1820-6220CC6F7079}|Bl\\Bl.csproj|c:\\users\\yousef\\documents\\github\\code_generator\\bl\\logic\\clsapigenrator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{07C109ED-B606-EED1-1820-6220CC6F7079}|Bl\\Bl.csproj|solutionrelative:bl\\logic\\clsapigenrator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -18,8 +26,21 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 0,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "CodeGenerator",
+              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\ConsoleApp\\CodeGenerator.csproj",
+              "RelativeDocumentMoniker": "ConsoleApp\\CodeGenerator.csproj",
+              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\ConsoleApp\\CodeGenerator.csproj*",
+              "RelativeToolTip": "ConsoleApp\\CodeGenerator.csproj*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-06-27T02:56:46.563Z",
+              "EditorCaption": ""
+            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
@@ -27,6 +48,19 @@
             {
               "$type": "Document",
               "DocumentIndex": 1,
+              "Title": "Bl",
+              "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\Bl\\Bl.csproj",
+              "RelativeDocumentMoniker": "Bl\\Bl.csproj",
+              "ToolTip": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\Bl\\Bl.csproj",
+              "RelativeToolTip": "Bl\\Bl.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-06-27T02:51:05.954Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\ConsoleApp\\Program.cs",
               "RelativeDocumentMoniker": "ConsoleApp\\Program.cs",
@@ -34,12 +68,11 @@
               "RelativeToolTip": "ConsoleApp\\Program.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-26T23:21:27.489Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-26T23:21:27.489Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "ClsAPIGenrator.cs",
               "DocumentMoniker": "C:\\Users\\Yousef\\Documents\\GitHub\\Code_Generator\\Bl\\Logic\\ClsAPIGenrator.cs",
               "RelativeDocumentMoniker": "Bl\\Logic\\ClsAPIGenrator.cs",

@@ -4,7 +4,6 @@ C:\Users\Yousef\Documents\GitHub\Code_Generator\Bl\obj\Debug\net8.0\Bl.AssemblyI
 C:\Users\Yousef\Documents\GitHub\Code_Generator\Bl\obj\Debug\net8.0\Bl.AssemblyInfo.cs
 C:\Users\Yousef\Documents\GitHub\Code_Generator\Bl\obj\Debug\net8.0\Bl.csproj.CoreCompileInputs.cache
 C:\Users\Yousef\Documents\GitHub\Code_Generator\Bl\obj\Debug\net8.0\Bl.sourcelink.json
-C:\Users\Yousef\Documents\GitHub\Code_Generator\Bl\bin\Debug\net8.0\appsettings.json
 C:\Users\Yousef\Documents\GitHub\Code_Generator\Bl\bin\Debug\net8.0\Bl.deps.json
 C:\Users\Yousef\Documents\GitHub\Code_Generator\Bl\bin\Debug\net8.0\Bl.dll
 C:\Users\Yousef\Documents\GitHub\Code_Generator\Bl\bin\Debug\net8.0\Bl.pdb
@@ -15,3 +14,4 @@ C:\Users\Yousef\Documents\GitHub\Code_Generator\Bl\obj\Debug\net8.0\Bl.pdb
 C:\Users\Yousef\Documents\GitHub\Code_Generator\Bl\obj\Debug\net8.0\ref\Bl.dll
 C:\Users\Yousef\Documents\GitHub\Code_Generator\Bl\bin\Debug\net8.0\Utilities.dll
 C:\Users\Yousef\Documents\GitHub\Code_Generator\Bl\bin\Debug\net8.0\Utilities.pdb
+C:\Users\Yousef\Documents\GitHub\Code_Generator\Bl\bin\Debug\net8.0\appsettings.json
