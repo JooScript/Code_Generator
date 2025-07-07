@@ -1,5 +1,0 @@
-C:\Users\Yousef\Documents\GitHub\Code_Generator\obj\Debug\net9.0\CodeGenerator.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\Yousef\Documents\GitHub\Code_Generator\obj\Debug\net9.0\CodeGenerator.AssemblyInfoInputs.cache
-C:\Users\Yousef\Documents\GitHub\Code_Generator\obj\Debug\net9.0\CodeGenerator.AssemblyInfo.cs
-C:\Users\Yousef\Documents\GitHub\Code_Generator\obj\Debug\net9.0\CodeGenerator.csproj.CoreCompileInputs.cache
-C:\Users\Yousef\Documents\GitHub\Code_Generator\obj\Debug\net9.0\CodeGenerator.sourcelink.json

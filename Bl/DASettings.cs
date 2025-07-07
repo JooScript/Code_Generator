@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 
-namespace CodeGenerator_Logic
+namespace CodeGenerator.Bl
 {
     public static class DASettings
     {

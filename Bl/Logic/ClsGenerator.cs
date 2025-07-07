@@ -1,9 +1,16 @@
-﻿using Utilities;
+﻿using System.Text.RegularExpressions;
+using Utilities;
 
-namespace CodeGenerator_Logic
+namespace CodeGenerator.Bl
 {
     public class ClsGenerator
     {
+        public enum enCodeStyle
+        {
+            EFStyle = 0,
+            AdoStyle = 1
+        }
+
         public ClsGenerator()
         {
             DatabaseHelper.Initialize(DASettings.ConnectionString());
@@ -20,13 +27,38 @@ namespace CodeGenerator_Logic
         {
             get
             {
-                return ClsGlobal.FormatId(DatabaseHelper.GetFirstPrimaryKey(TableName));
+                return FormatId(DatabaseHelper.GetFirstPrimaryKey(TableName));
             }
         }
 
         protected static List<DatabaseHelper.ForeignKeyInfo> foreignKeys
         {
             get { return DatabaseHelper.GetForeignKeys(TableName); }
+        }
+
+        public static string ModelName
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(TableName))
+                {
+                    return null;
+                }
+
+                string tableName = FormatHelper.Singularize(WithoutPrefixTN);
+
+                if (TableName.StartsWith("Tbl", StringComparison.OrdinalIgnoreCase))
+                {
+                    tableName = $"Tbl{tableName}";
+                }
+
+                if (TableName.StartsWith("Tb", StringComparison.OrdinalIgnoreCase))
+                {
+                    tableName = $"Tb{tableName}";
+                }
+
+                return tableName;
+            }
         }
 
         public static string WithoutPrefixTN
@@ -67,6 +99,19 @@ namespace CodeGenerator_Logic
             }
         }
 
+        protected static string DtoClsName
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(TableName))
+                {
+                    return null;
+                }
+
+                return $"{FormattedTNSingle}DTO";
+            }
+        }
+
         protected static string LogicInterfaceName
         {
             get
@@ -89,7 +134,23 @@ namespace CodeGenerator_Logic
                     return null;
                 }
 
-                return $"Cls{FormattedTNSingle}Data";
+                return $"{FormattedTNSingle}Data";
+            }
+        }
+
+        protected static string DataObjName
+        {
+            get
+            {
+                return $"o{DataClsName}";
+            }
+        }
+
+        protected static string LogicObjName
+        {
+            get
+            {
+                return $"o{FormattedTNSingle}";
             }
         }
 
@@ -133,6 +194,14 @@ namespace CodeGenerator_Logic
             }
         }
 
+        protected static string ContextName
+        {
+            get
+            {
+                return $"{AppName}Context";
+            }
+        }
+
         protected static List<DatabaseHelper.ColumnInfo> Columns
         {
             get
@@ -141,7 +210,7 @@ namespace CodeGenerator_Logic
             }
         }
 
-        public static string BasicPath
+        public static string StoringPath
         {
             get
             {
@@ -173,6 +242,32 @@ namespace CodeGenerator_Logic
         /// - Primary key is of type int or bigint
         /// Returns false and logs appropriate error messages if any condition fails.
         /// </returns>
+
+        public static string FormatId(string? input, bool smallD = true)
+        {
+            if (input == null)
+            {
+                return string.Empty;
+            }
+
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return input;
+            }
+
+            if (input.EndsWith("id", StringComparison.OrdinalIgnoreCase) && input.Length >= 2)
+            {
+                char[] chars = input.ToCharArray();
+
+                chars[^2] = 'I';
+                chars[^1] = smallD ? 'd' : 'D';
+
+                return new string(chars);
+            }
+
+            return input;
+        }
+
         public static bool CheckGeneratorConditions(string tableName)
         {
             if (string.IsNullOrWhiteSpace(tableName))
@@ -244,9 +339,10 @@ namespace CodeGenerator_Logic
  1. Table Naming Conventions
  ---------------------------
     • Prefixes are optional:
-      - May begin with 'Tb' or 'Tbl'
+      - May begin with 'Tb' or 'Tbl' only
       - Descriptive names without prefixes are equally valid
       - Names should be in PascalCase
+      - Names Should Start with Capital Characters
       - Names should be Pluralized (e.g., 'Users', 'Orders')
     • Avoid using special characters or spaces
     • Names should be clear and descriptive of the table's purpose
@@ -272,12 +368,278 @@ namespace CodeGenerator_Logic
  ";
         }
 
-        public static bool GenerateAllLayers(string tableName, ClsDataAccessGenerator.enCodeStyle codeStyle = ClsDataAccessGenerator.enCodeStyle.AdoStyle) => CheckGeneratorConditions(tableName) && ClsDataAccessGenerator.GenerateDalCode(tableName, codeStyle) && ClsLogicGenerator.GenerateBlCode(tableName) && ClsAPIGenerator.GenerateControllerCode(tableName);
+        #region Perform Code Generation
 
+        public class CodeGenerationEventArgs : EventArgs
+        {
+            public string TableName { get; set; }
+            public string StepName { get; set; }
+            public bool Success { get; set; }
+            public string Message { get; set; }
+            public int Current { get; set; }
+            public int Total { get; set; }
+        }
+
+        public event EventHandler<CodeGenerationEventArgs> ProgressUpdated;
+
+        public void GenerateCode(enCodeStyle codeStyle = enCodeStyle.EFStyle)
+        {
+            try
+            {
+                DatabaseHelper.Initialize(DASettings.ConnectionString());
+
+                List<string> Excluded = new List<string> { "__EFMigrationsHistory", "AspNetRoleClaims", "AspNetRoles", "AspNetUserClaims", "AspNetUserLogins", "AspNetUserRoles", "AspNetUsers", "AspNetUserTokens" };
+                List<string> tables = DatabaseHelper.GetTableNames().Except(Excluded).ToList();
+                List<string> filteredTables = tables.Select(table => Regex.Replace(table, "^Tb(l)?", "")).ToList();
+
+                if (tables == null || tables.Count == 0)
+                {
+                    OnProgressUpdated(new CodeGenerationEventArgs
+                    {
+                        Message = "No tables found in the database.",
+                        Success = false
+                    });
+                    return;
+                }
+
+                // Show initial table list
+                OnProgressUpdated(new CodeGenerationEventArgs
+                {
+                    Message = ClsGenerator.GeneratationRequirements(),
+                    StepName = "Header"
+                });
+
+                OnProgressUpdated(new CodeGenerationEventArgs
+                {
+                    Message = "Tables found in the database:",
+                    StepName = "TableListHeader"
+                });
+
+                OnProgressUpdated(new CodeGenerationEventArgs
+                {
+                    Message = new string('═', 60),
+                    StepName = "TableListSeparator"
+                });
+
+                foreach (var table in filteredTables)
+                {
+                    OnProgressUpdated(new CodeGenerationEventArgs
+                    {
+                        Message = table,
+                        StepName = "TableListItem"
+                    });
+                }
+
+                short counter = 0;
+                bool allSuccess = true;
+                List<string> failedTables = new List<string>();
+
+                foreach (string table in tables)
+                {
+                    string displayedTN = Regex.Replace(table, "^Tbl?", "", RegexOptions.IgnoreCase);
+                    counter++;
+                    string formatedCounter = FormatHelper.FormatNumbers(counter, tables.Count);
+
+                    // Table header
+                    OnProgressUpdated(new CodeGenerationEventArgs
+                    {
+                        TableName = displayedTN,
+                        Message = $"╔[{formatedCounter}] Generating Code For: {displayedTN}╗",
+                        StepName = "TableHeader",
+                        Current = counter,
+                        Total = tables.Count
+                    });
+
+                    OnProgressUpdated(new CodeGenerationEventArgs
+                    {
+                        TableName = displayedTN,
+                        Message = $"╚{new string('═', $"╔[{formatedCounter}] Generating Code For: {displayedTN}╗".Length - 2)}╝",
+                        StepName = "TableHeaderUnderline",
+                        Current = counter,
+                        Total = tables.Count
+                    });
+
+                    // Check conditions
+                    OnProgressUpdated(new CodeGenerationEventArgs
+                    {
+                        TableName = displayedTN,
+                        Message = $"- Checking Conditions for {displayedTN}... ",
+                        StepName = "ConditionCheckStart",
+                        Current = counter,
+                        Total = tables.Count
+                    });
+
+                    bool condSuccess = ClsGenerator.CheckGeneratorConditions(table);
+                    OnProgressUpdated(new CodeGenerationEventArgs
+                    {
+                        TableName = displayedTN,
+                        Success = condSuccess,
+                        StepName = "ConditionCheckResult",
+                        Current = counter,
+                        Total = tables.Count
+                    });
+
+                    // Generate DAL
+                    OnProgressUpdated(new CodeGenerationEventArgs
+                    {
+                        TableName = displayedTN,
+                        Message = $"- Creating Data Access Layer (DA) for {displayedTN}... ",
+                        StepName = "DaGenerationStart",
+                        Current = counter,
+                        Total = tables.Count
+                    });
+
+                    bool daSuccess = ClsDaGenerator.GenerateDalCode(table, codeStyle);
+                    OnProgressUpdated(new CodeGenerationEventArgs
+                    {
+                        TableName = displayedTN,
+                        Success = daSuccess,
+                        StepName = "DaGenerationResult",
+                        Current = counter,
+                        Total = tables.Count
+                    });
+
+                    // Generate Dto
+                    OnProgressUpdated(new CodeGenerationEventArgs
+                    {
+                        TableName = displayedTN,
+                        Message = $"- Creating Data Access Layer (DTO) for {displayedTN}... ",
+                        StepName = "DTOGenerationStart",
+                        Current = counter,
+                        Total = tables.Count
+                    });
+
+                    bool dtoSuccess = ClsDaGenerator.GenerateDalCode(table, codeStyle);
+                    OnProgressUpdated(new CodeGenerationEventArgs
+                    {
+                        TableName = displayedTN,
+                        Success = daSuccess,
+                        StepName = "DTOGenerationResult",
+                        Current = counter,
+                        Total = tables.Count
+                    });
+
+                    // Generate BL
+                    OnProgressUpdated(new CodeGenerationEventArgs
+                    {
+                        TableName = displayedTN,
+                        Message = $"- Creating Business Logic (BL) for {displayedTN}... ",
+                        StepName = "BlGenerationStart",
+                        Current = counter,
+                        Total = tables.Count
+                    });
+
+                    bool blSuccess = ClsBlGenerator.GenerateBlCode(table, codeStyle);
+                    OnProgressUpdated(new CodeGenerationEventArgs
+                    {
+                        TableName = displayedTN,
+                        Success = blSuccess,
+                        StepName = "BlGenerationResult",
+                        Current = counter,
+                        Total = tables.Count
+                    });
+
+                    // Generate API
+                    OnProgressUpdated(new CodeGenerationEventArgs
+                    {
+                        TableName = displayedTN,
+                        Message = $"- Creating API Endpoints for {displayedTN}... ",
+                        StepName = "ApiGenerationStart",
+                        Current = counter,
+                        Total = tables.Count
+                    });
+
+                    bool endpointSuccess = ClsAPIGenerator.GenerateControllerCode(table, codeStyle);
+                    OnProgressUpdated(new CodeGenerationEventArgs
+                    {
+                        TableName = displayedTN,
+                        Success = endpointSuccess,
+                        StepName = "ApiGenerationResult",
+                        Current = counter,
+                        Total = tables.Count
+                    });
+
+                    if (!daSuccess || !blSuccess || !endpointSuccess || !condSuccess)
+                    {
+                        failedTables.Add(displayedTN);
+                        allSuccess = false;
+                        string errorDetails =
+                            (condSuccess ? "" : "❌ COND ") +
+                            (daSuccess ? "" : "❌ DAL ") +
+                            (blSuccess ? "" : "❌ BL ") +
+                            (endpointSuccess ? "" : "❌ API");
+
+                        OnProgressUpdated(new CodeGenerationEventArgs
+                        {
+                            TableName = displayedTN,
+                            Message = $"❌ Partial generation for table '{displayedTN}'. Failed: {errorDetails}",
+                            Success = false,
+                            StepName = "TableErrorSummary",
+                            Current = counter,
+                            Total = tables.Count
+                        });
+                    }
+                    else
+                    {
+                        OnProgressUpdated(new CodeGenerationEventArgs
+                        {
+                            TableName = displayedTN,
+                            Message = $"✓ Successfully generated all code for table '{displayedTN}'",
+                            Success = true,
+                            StepName = "TableSuccessSummary",
+                            Current = counter,
+                            Total = tables.Count
+                        });
+                    }
+                }
+
+                // Final summary
+                if (allSuccess)
+                {
+                    OnProgressUpdated(new CodeGenerationEventArgs
+                    {
+                        Message = "╔══════════════════════════════════════════════════════════╗\n" +
+                                 "║ ✓ Code generation completed successfully for all tables! ║\n" +
+                                 "║     Check the Generated Code folder for results.         ║\n" +
+                                 "╚══════════════════════════════════════════════════════════╝",
+                        Success = true,
+                        StepName = "FinalSuccess"
+                    });
+                }
+                else
+                {
+                    OnProgressUpdated(new CodeGenerationEventArgs
+                    {
+                        Message = $"╔══════════════════════════════════════════════════════════╗\n" +
+                                 $"║ ❌ Code generation completed with {failedTables.Count} failures          ║\n" +
+                                 $"║     Check the following tables: {string.Join(", ", failedTables)} ║\n" +
+                                 $"╚══════════════════════════════════════════════════════════╝",
+                        Success = false,
+                        StepName = "FinalWithErrors"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Helper.ErrorLogger(ex);
+                OnProgressUpdated(new CodeGenerationEventArgs
+                {
+                    Message = "╔══════════════════════════════════════════════════════════╗\n" +
+                              "║ ❌ CRITICAL ERROR: Code generation process failed!        ║\n" +
+                              $"║     Error: {ex.Message.PadRight(40)} ║\n" +
+                              "╚══════════════════════════════════════════════════════════╝",
+                    Success = false,
+                    StepName = "CriticalError"
+                });
+            }
+        }
+
+        protected virtual void OnProgressUpdated(CodeGenerationEventArgs e)
+        {
+            ProgressUpdated?.Invoke(this, e);
+        }
+
+        #endregion
 
     }
 }
-
-
-
-

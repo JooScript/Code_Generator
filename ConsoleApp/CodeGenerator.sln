@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35931.197
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bl", "..\Bl\Bl.csproj", "{65D27757-48CE-6DCC-5903-D7ED0BFC7E32}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeGenerator", "CodeGenerator.csproj", "{98461068-4E23-136C-C53A-83F0DF4A6EFD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utilities", "..\..\CS_Utilities\Utilities.csproj", "{36AF83F4-9ADB-2593-F55E-441EFB82D643}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{65D27757-48CE-6DCC-5903-D7ED0BFC7E32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65D27757-48CE-6DCC-5903-D7ED0BFC7E32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65D27757-48CE-6DCC-5903-D7ED0BFC7E32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65D27757-48CE-6DCC-5903-D7ED0BFC7E32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98461068-4E23-136C-C53A-83F0DF4A6EFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98461068-4E23-136C-C53A-83F0DF4A6EFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98461068-4E23-136C-C53A-83F0DF4A6EFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98461068-4E23-136C-C53A-83F0DF4A6EFD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36AF83F4-9ADB-2593-F55E-441EFB82D643}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36AF83F4-9ADB-2593-F55E-441EFB82D643}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36AF83F4-9ADB-2593-F55E-441EFB82D643}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36AF83F4-9ADB-2593-F55E-441EFB82D643}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3630F558-C30B-41A3-9530-554D38C09B62}
+	EndGlobalSection
+EndGlobal
