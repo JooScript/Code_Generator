@@ -280,7 +280,7 @@ namespace {AppName}.Controllers
                 return BadRequest(""Invalid {FormattedTNSingleVar} data."");
             }}
 
-            if (await {LogicObjName}.IsExistsAsync(Id))
+            if (!await {LogicObjName}.IsExistsAsync(Id))
             {{
                 return NotFound($""{FormattedTNSingle} with ID {{Id}} not found."");
             }}

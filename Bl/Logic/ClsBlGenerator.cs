@@ -114,17 +114,10 @@ namespace {AppName}.Bl
                 default:
                     throw new ArgumentException("Invalid code style specified.");
             }
-
-
-
-
-
         }
 
         private static string AdoDTOProperty()
         {
-
-
             var sb = new StringBuilder();
 
             sb.AppendLine($"        public {DtoClsName} DTO");
