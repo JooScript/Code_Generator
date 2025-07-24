@@ -118,3 +118,17 @@ C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\obj\Debug\net9.0\refi
 C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\obj\Debug\net9.0\CodeGenerator.pdb
 C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\obj\Debug\net9.0\CodeGenerator.genruntimeconfig.cache
 C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\obj\Debug\net9.0\ref\CodeGenerator.dll
+C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\bin\Debug\net9.0\Microsoft.CodeAnalysis.dll
+C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\bin\Debug\net9.0\cs\Microsoft.CodeAnalysis.resources.dll
+C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\bin\Debug\net9.0\de\Microsoft.CodeAnalysis.resources.dll
+C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\bin\Debug\net9.0\es\Microsoft.CodeAnalysis.resources.dll
+C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\bin\Debug\net9.0\fr\Microsoft.CodeAnalysis.resources.dll
+C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\bin\Debug\net9.0\it\Microsoft.CodeAnalysis.resources.dll
+C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\bin\Debug\net9.0\ja\Microsoft.CodeAnalysis.resources.dll
+C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\bin\Debug\net9.0\ko\Microsoft.CodeAnalysis.resources.dll
+C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\bin\Debug\net9.0\pl\Microsoft.CodeAnalysis.resources.dll
+C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\bin\Debug\net9.0\pt-BR\Microsoft.CodeAnalysis.resources.dll
+C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\bin\Debug\net9.0\ru\Microsoft.CodeAnalysis.resources.dll
+C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\bin\Debug\net9.0\tr\Microsoft.CodeAnalysis.resources.dll
+C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\bin\Debug\net9.0\zh-Hans\Microsoft.CodeAnalysis.resources.dll
+C:\Users\Yousef\Documents\GitHub\Code_Generator\ConsoleApp\bin\Debug\net9.0\zh-Hant\Microsoft.CodeAnalysis.resources.dll

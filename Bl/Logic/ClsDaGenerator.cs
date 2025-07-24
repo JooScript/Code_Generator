@@ -5,6 +5,11 @@ namespace CodeGenerator.Bl
 {
     public class ClsDaGenerator : ClsGenerator
     {
+        public ClsDaGenerator(string tableName) : base(tableName)
+        {
+
+        }
+
         #region  Class Structure
 
         private static string EFContextConstrctor()
@@ -22,7 +27,7 @@ namespace CodeGenerator.Bl
         {
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle:
+                case enCodeStyle.Ado:
                     return $@"public static async Task<bool> Is{FormattedTNSingle}ExistsByUsernameAsync(string username)
         {{
             if (string.IsNullOrWhiteSpace(username))
@@ -37,12 +42,12 @@ namespace CodeGenerator.Bl
                     command.Parameters.AddWithValue(""@Username"", username);
                     await connection.OpenAsync();
 
-                    var returnParameter = command.Parameters.Add(""@ReturnVal"", SqlDbType.Int);
+                    var returnParameter = command.Parameters.Add(""@ReturnVal"", SqlDbType.{GetSqlDbType()});
                     returnParameter.Direction = ParameterDirection.ReturnValue;
 
                     await command.ExecuteNonQueryAsync();
 
-                    return (int)returnParameter.Value == 1;
+                    return ({TableIdDT})returnParameter.Value == 1;
                 }}
             }}
             catch (Exception ex)
@@ -53,8 +58,8 @@ namespace CodeGenerator.Bl
         }}
 
 ";
-                case enCodeStyle.EFStyle:
-                    return $@"public async Task<bool> IsExistsAsync(string UserName)
+                case enCodeStyle.EF:
+                    return $@"public async Task<bool> {MethodNames.IsExists}(string UserName)
         {{
              if (string.IsNullOrWhiteSpace(UserName))
             {{
@@ -65,7 +70,7 @@ namespace CodeGenerator.Bl
 
             try
             {{
-                int result = await ctx.Database.SqlQueryRaw<int>(sqlQuery, new SqlParameter(""@UserName"", UserName)).SingleOrDefaultAsync().ConfigureAwait(false);
+                {TableIdDT} result = await ctx.Database.SqlQueryRaw<{TableIdDT}>(sqlQuery, new SqlParameter(""@UserName"", UserName)).SingleOrDefaultAsync().ConfigureAwait(false);
 
                 return result == 1;
             }}
@@ -88,8 +93,8 @@ namespace CodeGenerator.Bl
         {
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle:
-                    return $@"public static async Task<bool> Is{FormattedTNSingle}ExistsByPersonIdAsync(int personId)
+                case enCodeStyle.Ado:
+                    return $@"public static async Task<bool> Is{FormattedTNSingle}ExistsByPersonIdAsync({TableIdDT} personId)
         {{
             if (personId <= 0)
                 throw new ArgumentException(""Person ID must be greater than zero"", nameof(personId));
@@ -103,12 +108,12 @@ namespace CodeGenerator.Bl
                     command.Parameters.AddWithValue(""@PersonId"", personId);
                     await connection.OpenAsync();
 
-                    var returnParameter = command.Parameters.Add(""@ReturnVal"", SqlDbType.Int);
+                    var returnParameter = command.Parameters.Add(""@ReturnVal"", SqlDbType.{GetSqlDbType()});
                     returnParameter.Direction = ParameterDirection.ReturnValue;
 
                     await command.ExecuteNonQueryAsync();
 
-                    return (int)returnParameter.Value == 1;
+                    return ({TableIdDT})returnParameter.Value == 1;
                 }}
             }}
             catch (Exception ex)
@@ -119,8 +124,8 @@ namespace CodeGenerator.Bl
         }}
 
 ";
-                case enCodeStyle.EFStyle:
-                    return $@"public async Task<bool> IsExistsByPersonIdAsync(int personId)
+                case enCodeStyle.EF:
+                    return $@"public async Task<bool> IsExistsByPersonIdAsync({TableIdDT} personId)
         {{
             if (personId <= 0)
             {{
@@ -131,7 +136,7 @@ namespace CodeGenerator.Bl
 
             try
             {{
-                int result = await ctx.Database.SqlQueryRaw<int>(sqlQuery, new SqlParameter(""@personId"", personId)).SingleOrDefaultAsync().ConfigureAwait(false);
+                {TableIdDT} result = await ctx.Database.SqlQueryRaw<{TableIdDT}>(sqlQuery, new SqlParameter(""@personId"", personId)).SingleOrDefaultAsync().ConfigureAwait(false);
 
                 return result == 1;
             }}
@@ -152,7 +157,7 @@ namespace CodeGenerator.Bl
         {
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle:
+                case enCodeStyle.Ado:
                     return
    $@"using {AppName}.DTO;
 using Microsoft.Data.SqlClient;
@@ -163,7 +168,7 @@ namespace {AppName}.Da
 {{
     public partial class {DataClsName}
     {{";
-                case enCodeStyle.EFStyle:
+                case enCodeStyle.EF:
                     return
 $@"using {AppName}.Models;
 using Microsoft.Data.SqlClient;
@@ -172,7 +177,7 @@ using Utilities;
 
 namespace {AppName}.Da
 {{
-    public class {DataClsName}
+    public class {DataClsName} : {DataInterfaceName}
     {{";
                 default:
                     throw new ArgumentException("Invalid code style specified.");
@@ -183,7 +188,7 @@ namespace {AppName}.Da
         {
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle:
+                case enCodeStyle.Ado:
                     return $@"public static async Task<List<DtoClsName>> GetAll{FormattedTNPluralize}Async(int pageNumber = 1, int pageSize = 50)
         {{
             List<DtoClsName> {FormattedTNPluralizeVar}List = new List<DtoClsName>();
@@ -221,12 +226,12 @@ namespace {AppName}.Da
         }}
 
 ";
-                case enCodeStyle.EFStyle:
-                    return $@"public async Task<List<{ModelName}>> GetAllAsync(int pageNumber = 1, int pageSize = 50)
+                case enCodeStyle.EF:
+                    return $@"{ImplementationMethod(MethodNames.GetAll)}
         {{
             try
             {{              
-                var query = ctx.{TableName}.AsNoTracking();
+                var query = ctx.{ModelNameProp}.AsNoTracking();
 
                 var {FormattedTNPluralizeVar} = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync().ConfigureAwait(false);
 
@@ -249,8 +254,8 @@ namespace {AppName}.Da
         {
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle:
-                    return $@"public static async Task<DtoClsName> Get{FormattedTNSingle}ByIdAsync(int {TableId.ToLower()})
+                case enCodeStyle.Ado:
+                    return $@"public static async Task<DtoClsName> Get{FormattedTNSingle}ByIdAsync({TableIdDT} {TableId.ToLower()})
         {{
             if ({TableId.ToLower()} == null)
             {{
@@ -292,8 +297,8 @@ namespace {AppName}.Da
         }}
 
 ";
-                case enCodeStyle.EFStyle:
-                    return $@"public async Task<{ModelName}?> GetByIdAsync(int id)
+                case enCodeStyle.EF:
+                    return $@"{ImplementationMethod(MethodNames.GetById)}
 {{
     if (id <= 0)
     {{
@@ -302,7 +307,7 @@ namespace {AppName}.Da
 
     try
     {{
-    var {FormattedTNSingleVar} = ctx.{TableName}.FirstOrDefault(a => a.{TableId} == id);
+    var {FormattedTNSingleVar} = ctx.{ModelNameProp}.FirstOrDefault(a => a.{FormattedTableId} == id);
                 return {FormattedTNSingleVar};
     }}
     catch (Exception ex)
@@ -364,7 +369,7 @@ namespace {AppName}.Da
         {
             switch (codeStyle)
             {
-                case enCodeStyle.EFStyle:
+                case enCodeStyle.EF:
                     return $@"public async Task<({tResultsForGetByID()})?> GetByUsernameAndPasswordAsync(string username, string password)
 {{
          if (string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(username))
@@ -400,7 +405,7 @@ namespace {AppName}.Da
 }}
 
 ";
-                case enCodeStyle.AdoStyle:
+                case enCodeStyle.Ado:
                     return $@"public static async Task<DtoClsName> Get{FormattedTNSingle}ByUsernameAndPasswordAsync(string username, string password)
         {{
             if (string.IsNullOrWhiteSpace(username))
@@ -443,23 +448,18 @@ namespace {AppName}.Da
 
 ";
                 default:
-                    throw new ArgumentException("Invalid code style specified.");
+                    {
+                        throw new ArgumentException("Invalid code style specified.");
+                    }
             }
-
-
-
-
-
-
-
         }
 
         private static string GetByPersonIDMethod(enCodeStyle codeStyle)
         {
             switch (codeStyle)
             {
-                case enCodeStyle.EFStyle:
-                    return $@"public async Task<({tResultsForGetByID()})?> GetByPersonIdAsync(int personid)
+                case enCodeStyle.EF:
+                    return $@"public async Task<({tResultsForGetByID()})?> GetByPersonIdAsync({TableIdDT} personid)
 {{
     if (personid <= 0)
     {{
@@ -495,8 +495,8 @@ namespace {AppName}.Da
 }}
 
 ";
-                case enCodeStyle.AdoStyle:
-                    return $@"public static async Task<DtoClsName> Get{FormattedTNSingle}ByPersonIdAsync(int personId)
+                case enCodeStyle.Ado:
+                    return $@"public static async Task<DtoClsName> Get{FormattedTNSingle}ByPersonIdAsync({TableIdDT} personId)
         {{
             if (personId <= 0)
                 throw new ArgumentException(""Person ID must be greater than zero"", nameof(personId));
@@ -534,21 +534,18 @@ namespace {AppName}.Da
 
 ";
                 default:
-                    throw new ArgumentException("Invalid code style specified.");
-
+                    {
+                        throw new ArgumentException("Invalid code style specified.");
+                    }
             }
-
-
-
-
         }
 
         private static string AddNewMethod(enCodeStyle codeStyle)
         {
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle:
-                    return $@"public static async Task<int> Add{FormattedTNSingle}Async(DtoClsName {FormattedTNSingleVar.ToLower()}DTO)
+                case enCodeStyle.Ado:
+                    return $@"public static async Task<{TableIdDT}> Add{FormattedTNSingle}Async(DtoClsName {FormattedTNSingleVar.ToLower()}DTO)
         {{
             if ({FormattedTNSingleVar.ToLower()}DTO == null)
             {{
@@ -569,7 +566,7 @@ namespace {AppName}.Da
 
 {GetCommandParametersForAddUpdate()}
 
-                    SqlParameter outputIdParam = new SqlParameter(""@New{TableId}"", SqlDbType.Int)
+                    SqlParameter outputIdParam = new SqlParameter(""@New{TableId}"", SqlDbType.{GetSqlDbType()})
                     {{
                         Direction = ParameterDirection.Output
                     }};
@@ -578,7 +575,7 @@ namespace {AppName}.Da
                     await connection.OpenAsync();
                     await command.ExecuteNonQueryAsync();
 
-                    return (int)outputIdParam.Value;
+                    return ({TableIdDT})outputIdParam.Value;
                 }}
             }}
             catch (Exception ex)
@@ -589,15 +586,15 @@ namespace {AppName}.Da
         }}
 
 ";
-                case enCodeStyle.EFStyle:
-                    return $@"public async Task<int> AddAsync({ModelName} {FormattedTNSingleVar})
+                case enCodeStyle.EF:
+                    return $@"{ImplementationMethod(MethodNames.Add)}
         {{
- {FormattedTNSingleVar}.{TableId} = 0;
+ {FormattedTNSingleVar}.{FormattedTableId} = 0;
             try
             {{
-                await ctx.{TableName}.AddAsync({FormattedTNSingleVar}).ConfigureAwait(false);
+                await ctx.{ModelNameProp}.AddAsync({FormattedTNSingleVar}).ConfigureAwait(false);
                 await ctx.SaveChangesAsync().ConfigureAwait(false);
-                return {FormattedTNSingleVar}.{TableId};
+                return {FormattedTNSingleVar}.{FormattedTableId};
             }}
             catch (Exception ex)
             {{
@@ -610,16 +607,13 @@ namespace {AppName}.Da
                 default:
                     throw new ArgumentException("Invalid code style specified.");
             }
-
-
-
         }
 
         private static string UpdateMethod(enCodeStyle codeStyle)
         {
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle:
+                case enCodeStyle.Ado:
                     return $@"public static async Task<bool> Update{FormattedTNSingle}Async(DtoClsName {FormattedTNSingleVar.ToLower()}DTO)
         {{
             if ({FormattedTNSingleVar.ToLower()}DTO == null)
@@ -656,10 +650,10 @@ namespace {AppName}.Da
         }}
 
 ";
-                case enCodeStyle.EFStyle:
-                    return $@"public async Task<bool> UpdateAsync({ModelName} {FormattedTNSingleVar})
+                case enCodeStyle.EF:
+                    return $@"{ImplementationMethod(MethodNames.Update)}
         {{
-           if ({FormattedTNSingleVar}.{TableId} <= 0)
+           if ({FormattedTNSingleVar}.{FormattedTableId} <= 0)
             {{
                 return false;
             }}
@@ -687,8 +681,8 @@ namespace {AppName}.Da
         {
             switch (codeStyle)
             {
-                case enCodeStyle.EFStyle:
-                    return $@"public async Task<bool> DeleteAsync(int id)
+                case enCodeStyle.EF:
+                    return $@"{ImplementationMethod(MethodNames.Delete)}
         {{
             if (id <= 0)
             {{
@@ -697,15 +691,17 @@ namespace {AppName}.Da
 
             try
             {{
-                {ModelName}? {FormattedTNSingleVar} = await ctx.{TableName}.SingleOrDefaultAsync(x => x.{TableId} == id).ConfigureAwait(false);
+ {ModelName}? {FormattedTNSingleVar} = await {MethodNames.GetById}(id);
+              
 
                 if ({FormattedTNSingleVar} == null)
                 {{
                     return false;
                 }}
 
-                ctx.{TableName}.Remove({FormattedTNSingleVar});
+                  {FormattedTNSingleVar}.IsDeleted = true;
                 await ctx.SaveChangesAsync().ConfigureAwait(false);
+       
 
                 return true;
             }}
@@ -717,8 +713,8 @@ namespace {AppName}.Da
         }}
 
 ";
-                case enCodeStyle.AdoStyle:
-                    return $@"public static async Task<bool> Delete{FormattedTNSingle}Async(int {TableId.ToLower()})
+                case enCodeStyle.Ado:
+                    return $@"public static async Task<bool> Delete{FormattedTNSingle}Async({TableIdDT} {TableId.ToLower()})
         {{
             if ({TableId.ToLower()} <= 0)
                 throw new ArgumentException(""{FormattedTNSingle} ID must be greater than zero"", nameof({TableId.ToLower()}));
@@ -732,7 +728,7 @@ namespace {AppName}.Da
                     command.Parameters.AddWithValue(""@{TableId}"", {TableId.ToLower()});
 
                     await connection.OpenAsync();
-                    int rowsAffected = (int)await command.ExecuteScalarAsync();
+                    {TableIdDT} rowsAffected = ({TableIdDT})await command.ExecuteScalarAsync();
 
                     return rowsAffected == 1;
                 }}
@@ -754,14 +750,14 @@ namespace {AppName}.Da
         {
             switch (codeStyle)
             {
-                case enCodeStyle.EFStyle:
+                case enCodeStyle.EF:
                     {
-                        if (!ClsSPGenerator.IsExistsSP())
+                        if (!new ClsSPGenerator(TableName).IsExistsSP())
                         {
                             Helper.ErrorLogger(new Exception("Faild To Create IsExists Stored Procedure"));
                         }
 
-                        return $@"               public async Task<bool> IsExistsAsync(int id)
+                        return $@"               {ImplementationMethod(MethodNames.IsExists)}
         {{
             if (id <= 0)
             {{
@@ -773,14 +769,14 @@ namespace {AppName}.Da
             var returnParameter = new SqlParameter
             {{
                 ParameterName = ""@ReturnVal"",
-                SqlDbType = System.Data.SqlDbType.Int,
+                SqlDbType = System.Data.SqlDbType.{GetSqlDbType()},
                 Direction = System.Data.ParameterDirection.Output
             }};
 
             try
             {{
                 await ctx.Database.ExecuteSqlRawAsync(""EXEC @ReturnVal = [dbo].[SP_Is{FormattedTNSingle}Exists] @{TableId}"", returnParameter, parameter);
-                return (int)returnParameter.Value == 1;
+                return ({TableIdDT})returnParameter.Value == 1;
             }}
             catch (Exception ex)
             {{
@@ -791,8 +787,8 @@ namespace {AppName}.Da
 
 ";
                     }
-                case enCodeStyle.AdoStyle:
-                    return $@"public static async Task<bool> Is{FormattedTNSingle}ExistsAsync(int {TableId.ToLower()})
+                case enCodeStyle.Ado:
+                    return $@"public static async Task<bool> Is{FormattedTNSingle}ExistsAsync({TableIdDT} {TableId.ToLower()})
         {{
             if ({TableId.ToLower()} <= 0)
                 throw new ArgumentException(""{FormattedTNSingle} ID must be greater than zero"", nameof({TableId.ToLower()}));
@@ -806,12 +802,12 @@ namespace {AppName}.Da
                     command.Parameters.AddWithValue(""@{TableId}"", {TableId.ToLower()});
                     await connection.OpenAsync();
 
-                    var returnParameter = command.Parameters.Add(""@ReturnVal"", SqlDbType.Int);
+                    var returnParameter = command.Parameters.Add(""@ReturnVal"", SqlDbType.{GetSqlDbType()});
                     returnParameter.Direction = ParameterDirection.ReturnValue;
 
                     await command.ExecuteNonQueryAsync();
 
-                    return (int)returnParameter.Value == 1;
+                    return ({TableIdDT})returnParameter.Value == 1;
                 }}
             }}
             catch (Exception ex)
@@ -823,8 +819,9 @@ namespace {AppName}.Da
 
 ";
                 default:
-                    throw new ArgumentException("Invalid code style specified.");
-
+                    {
+                        throw new ArgumentException("Invalid code style specified.");
+                    }
             }
         }
 
@@ -832,8 +829,8 @@ namespace {AppName}.Da
         {
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle:
-                    return $@"public static async Task<int> {FormattedTNPluralize}CountAsync()
+                case enCodeStyle.Ado:
+                    return $@"public static async Task<{TableIdDT}> {FormattedTNPluralize}{MethodNames.Count}()
         {{
             try
             {{
@@ -862,14 +859,14 @@ namespace {AppName}.Da
         }}
 
 ";
-                case enCodeStyle.EFStyle:
+                case enCodeStyle.EF:
                     {
-                        if (!ClsSPGenerator.CountSP())
+                        if (!new ClsSPGenerator(TableName).CountSP())
                         {
                             Helper.ErrorLogger(new Exception("Failed To Create Count Stored Procedure"));
                         }
 
-                        return $@"     public async Task<int> CountAsync()
+                        return $@"     {ImplementationMethod(MethodNames.Count)}
         {{
             const string sqlQuery = ""EXEC [dbo].[SP_{FormattedTNPluralize}Count]"";
 
@@ -894,12 +891,10 @@ namespace {AppName}.Da
 ";
                     }
                 default:
-                    throw new ArgumentException("Invalid code style specified.");
+                    {
+                        throw new ArgumentException("Invalid code style specified.");
+                    }
             }
-
-
-
-
         }
 
         private static string ADOValidationMethod()
@@ -911,7 +906,7 @@ namespace {AppName}.Da
             // Add validation logic for required fields
             foreach (var column in Columns)
             {
-                if (!column.IsNullable && !column.IsIdentity && column.Name.ToLower() != TableId.ToLower())
+                if (!column.IsNullable && !column.IsPrimaryKey && column.Name.ToLower() != TableId.ToLower())
                 {
                     string propertyName = FormatHelper.CapitalizeFirstChars(FormatId(column.Name));
                     string csharpType = Helper.GetCSharpType(column.DataType);
@@ -935,7 +930,7 @@ namespace {AppName}.Da
                 throw new ArgumentException(""{propertyName} is too far in the past"", nameof({FormattedTNSingleVar.ToLower()}.{propertyName}));
             }}");
                     }
-                    else if (csharpType == "int" || csharpType == "decimal" || csharpType == "double" || csharpType == "float")
+                    else if (csharpType == "int" || csharpType == "long" || csharpType == "decimal" || csharpType == "double" || csharpType == "float")
                     {
                         sb.AppendLine($@"            if ({FormattedTNSingleVar.ToLower()}.{propertyName} <= 0)
             {{
@@ -961,6 +956,9 @@ namespace {AppName}.Da
         #endregion
 
         #region  Support Methods
+
+        private static string GetSqlDbType() => TableIdDT == "long" ? "BigInt" : "Int";
+
 
         private static string GetReaderAssignments()
         {
@@ -1014,7 +1012,7 @@ namespace {AppName}.Da
 
             foreach (var column in Columns)
             {
-                if (column.IsIdentity)
+                if (column.IsPrimaryKey)
                 {
                     continue;
                 }
@@ -1105,24 +1103,14 @@ namespace {AppName}.Da
 
         #region Code Generation Methods
 
-        public static bool GenerateAdoDaCode(string tableName, string? folderPath = null)
+        public bool GenerateAdoDaCode(out string? filePath)
         {
-            if (tableName == null)
-            {
-                return false;
-            }
-            else
-            {
-                TableName = tableName;
-            }
+            filePath = null;
 
-            enCodeStyle style = enCodeStyle.AdoStyle;
+            enCodeStyle style = enCodeStyle.Ado;
 
-            if (string.IsNullOrEmpty(folderPath))
-            {
-                folderPath = Path.Combine(StoringPath, "DataAccess");
 
-            }
+
 
             StringBuilder dalCode = new StringBuilder();
 
@@ -1131,8 +1119,8 @@ namespace {AppName}.Da
 
             if (FormatHelper.Singularize(TableName.ToLower()) == "user")
             {
-                dalCode.Append(GetByUsernameAndPasswordMethod(enCodeStyle.AdoStyle));
-                dalCode.Append(GetByPersonIDMethod(enCodeStyle.AdoStyle));
+                dalCode.Append(GetByUsernameAndPasswordMethod(enCodeStyle.Ado));
+                dalCode.Append(GetByPersonIDMethod(enCodeStyle.Ado));
             }
 
             if (FormatHelper.Singularize(TableName.ToLower()) == "country")
@@ -1147,8 +1135,8 @@ namespace {AppName}.Da
 
             if (FormatHelper.Singularize(TableName.ToLower()) == "user")
             {
-                dalCode.Append(IsExistByUsernameMethod(enCodeStyle.AdoStyle));
-                dalCode.Append(IsExistByPersonIdMethod(enCodeStyle.AdoStyle));
+                dalCode.Append(IsExistByUsernameMethod(enCodeStyle.Ado));
+                dalCode.Append(IsExistByPersonIdMethod(enCodeStyle.Ado));
             }
 
             dalCode.Append(CountMethod(style));
@@ -1156,45 +1144,59 @@ namespace {AppName}.Da
             dalCode.Append(ADOValidationMethod());
             dalCode.Append(Closing());
 
-            return FileHelper.StoreToFile(dalCode.ToString(), $"{DataClsName}.cs", folderPath, true) && ClsSPGenerator.GenerateAllSPs();
+            string folderPath = Path.Combine(StoringPath, "DataAccess");
+            string fileName = $"{DataClsName}.cs";
+
+            bool success = FileHelper.StoreToFile(dalCode.ToString(), fileName, folderPath, true) && new ClsSPGenerator(TableName).GenerateAllSPs();
+
+            if (success)
+            {
+                filePath = Path.Combine(folderPath, fileName);
+            }
+
+            return success;
         }
 
-        public static bool GenerateEFDaCode(string tableName)
+        public bool GenerateEFDaCode(out string? filePath)
         {
-            if (tableName == null)
-            {
-                return false;
-            }
-            else
-            {
-                TableName = tableName;
-            }
+            filePath = null;
 
-            string folderPath = Path.Combine(StoringPath, "DataAccess");
+            var style = enCodeStyle.EF;
+
+
 
             StringBuilder dalCode = new StringBuilder();
 
-            dalCode.Append(TopUsing(enCodeStyle.EFStyle) + EFContextConstrctor() + GetAllMethod(enCodeStyle.EFStyle) + GetByIDMethod(enCodeStyle.EFStyle));
+            dalCode.Append(TopUsing(style) + EFContextConstrctor() + GetAllMethod(style) + GetByIDMethod(style));
 
             if (FormatHelper.Singularize(TableName.ToLower()) == "user")
             {
-                dalCode.Append(GetByPersonIDMethod(enCodeStyle.EFStyle) + GetByUsernameAndPasswordMethod(enCodeStyle.EFStyle));
+                dalCode.Append(GetByPersonIDMethod(enCodeStyle.EF) + GetByUsernameAndPasswordMethod(enCodeStyle.EF));
             }
 
-            dalCode.Append(AddNewMethod(enCodeStyle.EFStyle) + UpdateMethod(enCodeStyle.EFStyle) + DeleteMethod(enCodeStyle.EFStyle) + IsExistMethod(enCodeStyle.EFStyle));
+            dalCode.Append(AddNewMethod(style) + UpdateMethod(style) + DeleteMethod(style) + IsExistMethod(style));
 
             if (FormatHelper.Singularize(TableName.ToLower()) == "user")
             {
-                dalCode.Append(IsExistByUsernameMethod(enCodeStyle.EFStyle) + IsExistByPersonIdMethod(enCodeStyle.EFStyle));
+                dalCode.Append(IsExistByUsernameMethod(enCodeStyle.EF) + IsExistByPersonIdMethod(enCodeStyle.EF));
             }
 
-            dalCode.Append(CountMethod(enCodeStyle.EFStyle) + Closing());
+            dalCode.Append(CountMethod(style) + Closing());
 
             string fileName = $"{DataClsName}.cs";
-            return FileHelper.StoreToFile(dalCode.ToString(), fileName, folderPath, true);
+            string folderPath = Path.Combine(StoringPath, "DataAccess");
+
+            bool success = FileHelper.StoreToFile(dalCode.ToString(), fileName, folderPath, true);
+
+            if (success)
+            {
+                filePath = Path.Combine(folderPath, fileName);
+            }
+
+            return success;
         }
 
-        public static bool GenerateDalCode(string tableName, enCodeStyle codeStyle) => (codeStyle == enCodeStyle.AdoStyle ? GenerateAdoDaCode(tableName) : GenerateEFDaCode(tableName));
+        public bool GenerateDalCode(enCodeStyle codeStyle, out string filePath) => (codeStyle == enCodeStyle.Ado ? GenerateAdoDaCode(out filePath) : GenerateEFDaCode(out filePath));
 
         #endregion
 

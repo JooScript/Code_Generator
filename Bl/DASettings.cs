@@ -18,7 +18,7 @@ namespace CodeGenerator.Bl
         {
             get
             {
-                return 30;
+                return 2260;
             }
         }
 

@@ -1,40 +1,62 @@
-﻿using System.Text.RegularExpressions;
+﻿using Microsoft.SqlServer.Management.Smo;
+using System;
+using System.Text.RegularExpressions;
 using Utilities;
 
 namespace CodeGenerator.Bl
 {
     public class ClsGenerator
     {
-        public enum enCodeStyle
+        public ClsGenerator(string tableName)
         {
-            EFStyle = 0,
-            AdoStyle = 1
+            if (string.IsNullOrWhiteSpace(tableName))
+            {
+                throw new ArgumentException("Table name cannot be null or empty.", nameof(tableName));
+            }
+
+            InitializeConnectionString(DASettings.connStr);
+            TableName = tableName;
         }
 
-        public ClsGenerator()
+        public static void InitializeConnectionString(string connectionString) => DatabaseHelper.Initialize(connectionString);
+
+
+        public static void ClearSchemaCache() => DatabaseHelper.ClearSchemaCache();
+
+
+        public enum enCodeStyle
         {
-            DatabaseHelper.Initialize(DASettings.ConnectionString());
+            EF = 0,
+            Ado = 1
         }
 
         #region Properties
 
-        public static string TableName
-        {
-            get; set;
-        }
+        private static Regex _namingRegex => new Regex("_([A-Za-z])", RegexOptions.Compiled);
 
-        protected static string TableId
+        public static IReadOnlyDictionary<string, DatabaseHelper.TableSchema> DatabaseSchema => DatabaseHelper.GetDatabaseSchema(true);
+
+        protected static string TableName { get; set; }
+
+        public static DatabaseHelper.TableSchema CurrentTableSchema => DatabaseSchema[TableName];
+
+        public static DatabaseHelper.ColumnInfo PrimaryKeyCol => CurrentTableSchema.Columns.FirstOrDefault(x => x.IsPrimaryKey);
+
+        protected static string TableId => FormatId(PrimaryKeyCol.Name);
+
+        protected static string TableIdDT => Helper.GetCSharpType(PrimaryKeyCol.DataType);
+
+        protected static string FormattedTableId
         {
             get
             {
-                return FormatId(DatabaseHelper.GetFirstPrimaryKey(TableName));
+                return FormatHelper.CapitalizeFirstChars(_namingRegex.Replace(TableId, m => m.Groups[1].Value.ToUpper()));
             }
         }
 
-        protected static List<DatabaseHelper.ForeignKeyInfo> foreignKeys
-        {
-            get { return DatabaseHelper.GetForeignKeys(TableName); }
-        }
+        protected static List<DatabaseHelper.ForeignKeyInfo> foreignKeys => CurrentTableSchema.ForeignKeys;
+
+        public static string[] Prefixes => new string[] { "Tbl_", "Tb_", "Tb" }.OrderByDescending(s => s.Length).ToArray();
 
         public static string ModelName
         {
@@ -45,23 +67,24 @@ namespace CodeGenerator.Bl
                     return null;
                 }
 
-                string tableName = FormatHelper.Singularize(WithoutPrefixTN);
+                string tableName = FormatHelper.Singularize(WithoutPrefixFormattedTN);
 
-                if (TableName.StartsWith("Tbl", StringComparison.OrdinalIgnoreCase))
+                foreach (string item in Prefixes)
                 {
-                    tableName = $"Tbl{tableName}";
-                }
-
-                if (TableName.StartsWith("Tb", StringComparison.OrdinalIgnoreCase))
-                {
-                    tableName = $"Tb{tableName}";
+                    if (TableName.StartsWith(item, StringComparison.OrdinalIgnoreCase))
+                    {
+                        tableName = FormatHelper.CapitalizeFirstChars(_namingRegex.Replace($"{item}{tableName}", m => m.Groups[1].Value.ToUpper()));
+                        break;
+                    }
                 }
 
                 return tableName;
             }
         }
 
-        public static string WithoutPrefixTN
+        public static string ModelNameProp => FormatHelper.Pluralize(ModelName);
+
+        public static string WithoutPrefixFormattedTN
         {
             get
             {
@@ -72,155 +95,98 @@ namespace CodeGenerator.Bl
 
                 string tableName = TableName;
 
-                if (tableName.StartsWith("Tbl", StringComparison.OrdinalIgnoreCase))
+                foreach (string item in Prefixes)
                 {
-                    tableName = tableName.Substring(3);
-                }
-
-                if (tableName.StartsWith("Tb", StringComparison.OrdinalIgnoreCase))
-                {
-                    tableName = tableName.Substring(2);
+                    if (tableName.StartsWith(item, StringComparison.OrdinalIgnoreCase))
+                    {
+                        tableName = FormatHelper.CapitalizeFirstChars(_namingRegex.Replace(tableName.Substring(item.Length), m => m.Groups[1].Value.ToUpper()));
+                        break;
+                    }
                 }
 
                 return tableName;
             }
         }
 
-        protected static string LogicClsName
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(TableName))
-                {
-                    return null;
-                }
+        protected static string LogicClsName => $"Cls{FormattedTNSingle}";
 
-                return $"Cls{FormattedTNSingle}";
-            }
+        protected static string DtoClsName => $"{FormattedTNSingle}DTO";
+
+        protected static class MethodNames
+        {
+            public static string GetById => "GetById";
+            public static string GetAll => "GetAll";
+            public static string Add => "Add";
+            public static string Update => "Update";
+            public static string Save => "Save";
+            public static string IsExists => "IsExists";
+            public static string Count => "Count";
+            public static string Delete => "Delete";
         }
 
-        protected static string DtoClsName
+        protected static IReadOnlyDictionary<string, string> RepoMethods => new Dictionary<string, string>
+{
+    { MethodNames.GetById, $"public Task<{ModelName}> {MethodNames.GetById}({TableIdDT} id);" },
+    { MethodNames.GetAll, $"public Task<List<{ModelName}>> {MethodNames.GetAll}(int pageNumber = 1, int pageSize = 50);" },
+    { MethodNames.Add, $"public Task<{TableIdDT}> {MethodNames.Add}({ModelName} {FormattedTNSingleVar});" },
+    { MethodNames.Update, $"public Task<bool> {MethodNames.Update}({ModelName} {FormattedTNSingleVar});" },
+    { MethodNames.Save, $"public Task<bool> {MethodNames.Save}({ModelName} {FormattedTNSingleVar});" },
+    { MethodNames.IsExists, $"public Task<bool> {MethodNames.IsExists}({TableIdDT} id);" },
+    { MethodNames.Count, $"public Task<{TableIdDT}> {MethodNames.Count}();" },
+    { MethodNames.Delete, $"public Task<bool> {MethodNames.Delete}({TableIdDT} id);" }
+};
+
+        protected static string ImplementationMethod(string repoMethodName) => RepoMethods.TryGetValue(repoMethodName, out var method) ? method.Replace("public ", "public async ").Replace(";", "") : throw new KeyNotFoundException($"Method '{repoMethodName}' not found.");
+
+        protected static string LogicInterfaceName => $"I{FormattedTNSingle}";
+
+        protected static string DataInterfaceName => $"I{FormattedTNSingle}Data";
+
+        protected static string DataClsName => $"{FormattedTNSingle}Data";
+
+        protected static string DataObjName => $"o{DataClsName}";
+
+        protected static string LogicObjName => $"o{FormattedTNSingle}";
+
+        protected static string FormattedTNSingle => FormatHelper.CapitalizeFirstChars(FormatHelper.Singularize(WithoutPrefixFormattedTN) ?? string.Empty);
+
+        protected static string FormattedTNSingleVar => FormatHelper.SmalizeFirstChar(FormattedTNSingle);
+
+        protected static string FormattedTNPluralize => FormatHelper.CapitalizeFirstChars(FormatHelper.Pluralize(WithoutPrefixFormattedTN) ?? string.Empty);
+
+        protected static string FormattedTNPluralizeVar => FormatHelper.SmalizeFirstChar(FormattedTNPluralize);
+
+        protected static string AppName => _namingRegex.Replace(DASettings.AppName(), m => m.Groups[1].Value.ToUpper());
+
+        protected static string ContextName => $"{AppName}Context";
+
+        protected static List<DatabaseHelper.ColumnInfo> FormattedColumns => Columns
+        .Select(item => new DatabaseHelper.ColumnInfo
         {
-            get
-            {
-                if (string.IsNullOrEmpty(TableName))
-                {
-                    return null;
-                }
+            Name = Regex.Replace(item.Name, "_([A-Za-z])", m => m.Groups[1].Value.ToUpper()),
+            DataType = item.DataType,
+            IsIdentity = item.IsIdentity,
+            IsNullable = item.IsNullable,
+            MaxLength = item.MaxLength,
+            Precision = item.Precision,
+            Scale = item.Scale
+        }).ToList();
 
-                return $"{FormattedTNSingle}DTO";
-            }
-        }
+        protected static List<DatabaseHelper.ColumnInfo> Columns => DatabaseHelper.GetTableColumns(TableName);
 
-        protected static string LogicInterfaceName
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(TableName))
-                {
-                    return null;
-                }
+        public static string MappingTxt => "Mapping.txt";
 
-                return $"I{FormattedTNSingle}";
-            }
-        }
+        public static string BlDiTxt => "Bl_DI.txt";
 
-        protected static string DataClsName
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(TableName))
-                {
-                    return null;
-                }
-
-                return $"{FormattedTNSingle}Data";
-            }
-        }
-
-        protected static string DataObjName
-        {
-            get
-            {
-                return $"o{DataClsName}";
-            }
-        }
-
-        protected static string LogicObjName
-        {
-            get
-            {
-                return $"o{FormattedTNSingle}";
-            }
-        }
-
-        protected static string FormattedTNSingle
-        {
-            get
-            {
-                return FormatHelper.CapitalizeFirstChars(FormatHelper.Singularize(WithoutPrefixTN) ?? string.Empty);
-            }
-        }
-
-        protected static string FormattedTNSingleVar
-        {
-            get
-            {
-                return FormatHelper.SmalizeFirstChar(FormattedTNSingle);
-            }
-        }
-
-        protected static string FormattedTNPluralize
-        {
-            get
-            {
-                return FormatHelper.CapitalizeFirstChars(FormatHelper.Pluralize(WithoutPrefixTN) ?? string.Empty);
-            }
-        }
-
-        protected static string FormattedTNPluralizeVar
-        {
-            get
-            {
-                return FormatHelper.SmalizeFirstChar(FormattedTNPluralize);
-            }
-        }
-
-        protected static string AppName
-        {
-            get
-            {
-                return DASettings.AppName();
-            }
-        }
-
-        protected static string ContextName
-        {
-            get
-            {
-                return $"{AppName}Context";
-            }
-        }
-
-        protected static List<DatabaseHelper.ColumnInfo> Columns
-        {
-            get
-            {
-                return DatabaseHelper.GetTableColumns(TableName);
-            }
-        }
+        public static string DaDiTxt => "Da_DI.txt";
 
         public static string StoringPath
         {
             get
             {
-                string desktopPath = FileHelper.GetPath(FileHelper.enSpecialFolderType.Desktop);
-                string fullPath = Path.Combine(desktopPath, "Code Generator", AppName);
+                string fullPath = Path.Combine(FileHelper.GetPath(FileHelper.enSpecialFolderType.Desktop), "Code Generator", AppName);
 
-                if (!Directory.Exists(fullPath))
-                {
-                    Directory.CreateDirectory(fullPath);
-                }
+                Helper.CreateFolderIfDoesNotExist(fullPath);
 
                 return fullPath;
             }
@@ -268,32 +234,36 @@ namespace CodeGenerator.Bl
             return input;
         }
 
-        public static bool CheckGeneratorConditions(string tableName)
+        public bool CheckGeneratorConditions()
         {
-            if (string.IsNullOrWhiteSpace(tableName))
-            {
-                Helper.ErrorLogger(new ArgumentException("Table name cannot be null or whitespace.", nameof(tableName)));
-                return false;
-            }
-
-            TableName = tableName;
-
             try
             {
-                if (!DatabaseHelper.TableExists(TableName))
+                if (CurrentTableSchema == null)
                 {
                     Helper.ErrorLogger(new Exception($"Table '{TableName}' does not exist in the database."));
                     return false;
                 }
 
-                var columns = DatabaseHelper.GetTableColumns(TableName);
+                if (!ValidationHelper.IsPlural(TableName))
+                {
+                    Helper.ErrorLogger(new Exception($"Table '{TableName}' not Plural."));
+                    return false;
+                }
+
+                var columns = CurrentTableSchema.Columns;
                 if (columns == null || columns.Count == 0)
                 {
                     Helper.ErrorLogger(new Exception($"Table '{TableName}' has no columns."));
                     return false;
                 }
 
-                List<string> primaryKeys = DatabaseHelper.GetPrimaryKeys(TableName);
+                if (!columns.Any(item => item.Name == "IsDeleted"))
+                {
+                    Helper.ErrorLogger(new Exception($"Table '{TableName}' has no columns named IsDeleted for Soft Delete."));
+                    return false;
+                }
+
+                List<string> primaryKeys = CurrentTableSchema.PrimaryKeys;
                 if (primaryKeys.Count != 1)
                 {
                     Helper.ErrorLogger(new Exception($"Table '{TableName}' must have exactly one primary key to generate code. Found {primaryKeys.Count}."));
@@ -321,6 +291,12 @@ namespace CodeGenerator.Bl
                     return false;
                 }
 
+                if (primaryKeyColumn.Name != "Id")
+                {
+                    Helper.ErrorLogger(new Exception($"Primary key '{primaryKey}' in table '{TableName}' should be named Id. Found '{primaryKeyColumn.Name}'."));
+                    return false;
+                }
+
                 return true;
             }
             catch (Exception ex)
@@ -330,16 +306,15 @@ namespace CodeGenerator.Bl
             }
         }
 
-        public static string GeneratationRequirements()
-        {
-            return
-@"Database Table Processing Requirements
+        public static string GeneratationRequirements() =>
+
+@$"Database Table Processing Requirements
  ======================================
  
  1. Table Naming Conventions
  ---------------------------
     • Prefixes are optional:
-      - May begin with 'Tb' or 'Tbl' only
+      - May begin with {string.Join(",", Prefixes)} only
       - Descriptive names without prefixes are equally valid
       - Names should be in PascalCase
       - Names Should Start with Capital Characters
@@ -349,6 +324,7 @@ namespace CodeGenerator.Bl
  
  2. Table Structure Requirements
  -------------------------------
+    • Soft Deletion: Table must have on column named IsDeleted
     • Existence: Table must exist in the target database
     • Columns: Must contain at least one defined column
     • Schema: Must belong to a valid database schema
@@ -359,6 +335,7 @@ namespace CodeGenerator.Bl
     • Identity: Must be configured as an IDENTITY column
     • Data Type: Must be either INT or BIGINT
     • Constraints: Should be NOT NULL
+    • Name: Should be Id
  
  4. Recommendations
  ------------------
@@ -366,7 +343,7 @@ namespace CodeGenerator.Bl
     • Consider future scalability when choosing between INT and BIGINT
     • Document table purposes in database documentation
  ";
-        }
+
 
         #region Perform Code Generation
 
@@ -382,7 +359,7 @@ namespace CodeGenerator.Bl
 
         public event EventHandler<CodeGenerationEventArgs> ProgressUpdated;
 
-        public void GenerateCode(enCodeStyle codeStyle = enCodeStyle.EFStyle)
+        public void GenerateCode(enCodeStyle codeStyle = enCodeStyle.EF)
         {
             try
             {
@@ -390,7 +367,7 @@ namespace CodeGenerator.Bl
 
                 List<string> Excluded = new List<string> { "__EFMigrationsHistory", "AspNetRoleClaims", "AspNetRoles", "AspNetUserClaims", "AspNetUserLogins", "AspNetUserRoles", "AspNetUsers", "AspNetUserTokens" };
                 List<string> tables = DatabaseHelper.GetTableNames().Except(Excluded).ToList();
-                List<string> filteredTables = tables.Select(table => Regex.Replace(table, "^Tb(l)?", "")).ToList();
+                List<string> filteredTables = tables.Select(table => Regex.Replace(table, @"^(Tb(l)?_?|Tbl_?)", "", RegexOptions.IgnoreCase)).ToList();
 
                 if (tables == null || tables.Count == 0)
                 {
@@ -436,6 +413,7 @@ namespace CodeGenerator.Bl
 
                 foreach (string table in tables)
                 {
+                    string path = null;
                     string displayedTN = Regex.Replace(table, "^Tbl?", "", RegexOptions.IgnoreCase);
                     counter++;
                     string formatedCounter = FormatHelper.FormatNumbers(counter, tables.Count);
@@ -469,7 +447,7 @@ namespace CodeGenerator.Bl
                         Total = tables.Count
                     });
 
-                    bool condSuccess = ClsGenerator.CheckGeneratorConditions(table);
+                    bool condSuccess = new ClsGenerator(table).CheckGeneratorConditions();
                     OnProgressUpdated(new CodeGenerationEventArgs
                     {
                         TableName = displayedTN,
@@ -489,7 +467,8 @@ namespace CodeGenerator.Bl
                         Total = tables.Count
                     });
 
-                    bool daSuccess = ClsDaGenerator.GenerateDalCode(table, codeStyle);
+
+                    bool daSuccess = new ClsDaGenerator(TableName).GenerateDalCode(codeStyle, out path);
                     OnProgressUpdated(new CodeGenerationEventArgs
                     {
                         TableName = displayedTN,
@@ -509,7 +488,7 @@ namespace CodeGenerator.Bl
                         Total = tables.Count
                     });
 
-                    bool dtoSuccess = ClsDaGenerator.GenerateDalCode(table, codeStyle);
+                    bool dtoSuccess = new ClsDtoGenerator(TableName).GenerateDTO(codeStyle, out path);
                     OnProgressUpdated(new CodeGenerationEventArgs
                     {
                         TableName = displayedTN,
@@ -529,7 +508,7 @@ namespace CodeGenerator.Bl
                         Total = tables.Count
                     });
 
-                    bool blSuccess = ClsBlGenerator.GenerateBlCode(table, codeStyle);
+                    bool blSuccess = new ClsBlGenerator(TableName).GenerateBlCode(codeStyle, out path);
                     OnProgressUpdated(new CodeGenerationEventArgs
                     {
                         TableName = displayedTN,
@@ -549,7 +528,7 @@ namespace CodeGenerator.Bl
                         Total = tables.Count
                     });
 
-                    bool endpointSuccess = ClsAPIGenerator.GenerateControllerCode(table, codeStyle);
+                    bool endpointSuccess = new ClsAPIGenerator(TableName).GenerateControllerCode(codeStyle, out path);
                     OnProgressUpdated(new CodeGenerationEventArgs
                     {
                         TableName = displayedTN,

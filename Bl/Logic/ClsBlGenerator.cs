@@ -6,6 +6,10 @@ namespace CodeGenerator.Bl
 {
     public class ClsBlGenerator : ClsGenerator
     {
+        public ClsBlGenerator(string tableName) : base(tableName)
+        {
+
+        }
         #region Support Methods
 
         private static string _GetClsNameFromColName(string colName)
@@ -93,7 +97,7 @@ namespace CodeGenerator.Bl
         {
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle:
+                case enCodeStyle.Ado:
                     return $@"using {AppName}.Da;
 using {AppName}.DTO;
 using Utilities;
@@ -102,7 +106,7 @@ namespace {AppName}.Bl
 {{
     public class {LogicClsName}
     {{";
-                case enCodeStyle.EFStyle:
+                case enCodeStyle.EF:
                     return $@"using {AppName}.Da;
 using {AppName}.Models;
 using Utilities;
@@ -185,8 +189,8 @@ namespace {AppName}.Bl
         {
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle:
-                    return $@"        public static async Task<{LogicClsName}> FindAsync(int {TableId})
+                case enCodeStyle.Ado:
+                    return $@"        public static async Task<{LogicClsName}> {MethodNames.GetById}({TableIdDT} {TableId})
         {{
             if ({TableId} <= 0 || {TableId} == null)
             {{
@@ -206,8 +210,8 @@ namespace {AppName}.Bl
         }}
 
 ";
-                case enCodeStyle.EFStyle:
-                    return $@"               public async Task<{ModelName}> FindAsync(int id)
+                case enCodeStyle.EF:
+                    return $@"               {ImplementationMethod(MethodNames.GetById)}
         {{
             if (id <= 0 || id == null)
             {{
@@ -216,7 +220,7 @@ namespace {AppName}.Bl
 
             try
             {{
-                var {FormattedTNSingleVar} = await {DataObjName}.GetByIdAsync(id);
+                var {FormattedTNSingleVar} = await {DataObjName}.{MethodNames.GetById}(id);
                 return {FormattedTNSingleVar};
             }}
             catch (Exception ex)
@@ -230,9 +234,6 @@ namespace {AppName}.Bl
                 default:
                     throw new ArgumentException("Invalid code style specified.");
             }
-
-
-
         }
 
         private static string FindByUsernameAndPasswordMethod(enCodeStyle codeStyle)
@@ -240,7 +241,7 @@ namespace {AppName}.Bl
 
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle:
+                case enCodeStyle.Ado:
                     return $@"        public static async Task<{LogicClsName}> FindByUsernameAndPasswordAsync(string username, string password)
         {{
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
@@ -261,7 +262,7 @@ return null;
         }}
 
 ";
-                case enCodeStyle.EFStyle:
+                case enCodeStyle.EF:
                     return $@"        public async Task<{ModelName}> FindByUsernameAndPasswordAsync(string username, string password)
         {{
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
@@ -294,8 +295,8 @@ return null;
         {
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle:
-                    return $@"        public static async Task<{LogicClsName}> FindByPersonIdAsync(int personId)
+                case enCodeStyle.Ado:
+                    return $@"        public static async Task<{LogicClsName}> FindByPersonIdAsync({TableIdDT} personId)
         {{
             if (personId <= 0)
                 return null;
@@ -313,7 +314,7 @@ return null;
         }}
 
 ";
-                case enCodeStyle.EFStyle:
+                case enCodeStyle.EF:
                     return $@"        public async Task<{ModelName}> FindByPersonIdAsync(int personId)
         {{
             if (personId <= 0)
@@ -344,8 +345,8 @@ return null;
         {
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle:
-                    { return $@"        public static async Task<{LogicClsName}> FindAsync(string CountryName)
+                case enCodeStyle.Ado:
+                    { return $@"        public static async Task<{LogicClsName}> {MethodNames.GetById}(string CountryName)
         {{
               if (string.IsNullOrWhiteSpace(CountryName))
             {{
@@ -365,9 +366,9 @@ return null;
         }}
 
 "; }
-                case enCodeStyle.EFStyle:
+                case enCodeStyle.EF:
                     {
-                        return $@"        public async Task<{ModelName}> FindAsync(string CountryName)
+                        return $@"        public async Task<{ModelName}> {MethodNames.GetById}(string CountryName)
         {{
               if (string.IsNullOrWhiteSpace(CountryName))
             {{
@@ -399,7 +400,7 @@ return null;
         {
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle:
+                case enCodeStyle.Ado:
                     {
                         return $@"        public static async Task<bool> IsExistsByUsernameAsync(string username)
         {{
@@ -419,7 +420,7 @@ return null;
 
 ";
                     }
-                case enCodeStyle.EFStyle:
+                case enCodeStyle.EF:
                     {
                         return $@"        public async Task<bool> IsExistsByUsernameAsync(string username)
         {{
@@ -450,7 +451,7 @@ return null;
         {
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle: { return $@"        public static async Task<bool> IsExistsByPersonIdAsync(int personId)
+                case enCodeStyle.Ado: { return $@"        public static async Task<bool> IsExistsByPersonIdAsync(int personId)
         {{
             if (personId <= 0)
                 return false;
@@ -467,7 +468,7 @@ return null;
         }}
 
 "; }
-                case enCodeStyle.EFStyle:
+                case enCodeStyle.EF:
                     {
                         return $@"        public async Task<bool> IsExistsByPersonIdAsync(int personId)
         {{
@@ -499,20 +500,20 @@ return null;
 
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle:
+                case enCodeStyle.Ado:
                     {
-                        return $@"        public static async Task<int> CountAsync()
+                        return $@"        public static async Task<{TableIdDT}> {MethodNames.Count}()
         {{
-            return await {DataClsName}.CountAsync();
+            return await {DataClsName}.{MethodNames.Count}();
         }}
 
 ";
                     }
-                case enCodeStyle.EFStyle:
+                case enCodeStyle.EF:
                     {
-                        return $@"        public async Task<int> CountAsync()
+                        return $@"        {ImplementationMethod(MethodNames.Count)}
         {{
-            return await {DataObjName}.CountAsync();
+            return await {DataObjName}.{MethodNames.Count}();
         }}
 
 ";
@@ -523,9 +524,6 @@ return null;
                         throw new ArgumentException("Invalid code style specified.");
                     }
             }
-
-
-
         }
 
         private static string EFContextConstructor()
@@ -547,7 +545,7 @@ return null;
 ";
             string GetAll, Count, Find, Save, Delete, IsExist;
 
-            if (codeStyle == enCodeStyle.AdoStyle)
+            if (codeStyle == enCodeStyle.Ado)
             {
                 GetAll = $@"       public static List<{DtoClsName}> GetAll(int pageNumber = 1, int pageSize = 50)
         {{
@@ -555,33 +553,33 @@ return null;
         }}
 
 ";
-                Count = $@"        public static int {FormattedTNPluralize}Count()
+                Count = $@"        public static {TableIdDT} {FormattedTNPluralize}Count()
         {{
-            return {FormattedTNPluralize}CountAsync().GetAwaiter().GetResult();
+            return {FormattedTNPluralize}{MethodNames.Count}().GetAwaiter().GetResult();
         }}
 
 ";
-                Find = $@"         public static {LogicClsName} Find(int {TableId})
+                Find = $@"         public static {LogicClsName} Find({TableIdDT} {FormattedTableId})
         {{
-            return FindAsync({TableId}).GetAwaiter().GetResult();
+            return {MethodNames.GetById}({FormattedTableId}).GetAwaiter().GetResult();
         }}
 
 ";
                 Save = $@"       public bool Save()
         {{
-            return SaveAsync().GetAwaiter().GetResult();
+            return {MethodNames.Save}().GetAwaiter().GetResult();
         }}
 
 ";
-                Delete = $@"        public static bool Delete{FormattedTNSingle}(int {TableId})
+                Delete = $@"        public static bool Delete{FormattedTNSingle}({TableIdDT} {FormattedTableId})
         {{
-            return Delete{FormattedTNSingle}Async({TableId}).GetAwaiter().GetResult();
+            return Delete{FormattedTNSingle}Async({FormattedTableId}).GetAwaiter().GetResult();
         }}
 
 ";
-                IsExist = $@"        public static bool Is{FormattedTNSingle}Exists(int {TableId})
+                IsExist = $@"        public static bool Is{FormattedTNSingle}Exists({TableIdDT} {FormattedTableId})
         {{
-            return Is{FormattedTNSingle}ExistsAsync({TableId}).GetAwaiter().GetResult();
+            return Is{FormattedTNSingle}ExistsAsync({FormattedTableId}).GetAwaiter().GetResult();
         }}
 
 ";
@@ -590,37 +588,37 @@ return null;
             {
                 GetAll = $@"       public List<{ModelName}> GetAll(int pageNumber = 1, int pageSize = 50)
         {{
-            return GetAllAsync( pageNumber ,  pageSize ).GetAwaiter().GetResult();
+            return {MethodNames.GetAll}( pageNumber ,  pageSize ).GetAwaiter().GetResult();
         }}
 
 ";
-                Count = $@"        public int Count()
+                Count = $@"        public {TableIdDT} Count()
         {{
-            return CountAsync().GetAwaiter().GetResult();
+            return {MethodNames.Count}().GetAwaiter().GetResult();
         }}
 
 ";
-                Find = $@"         public {ModelName} Find(int id)
+                Find = $@"         public {ModelName} Find({TableIdDT} id)
         {{
-            return FindAsync(id).GetAwaiter().GetResult();
+            return {MethodNames.GetById}(id).GetAwaiter().GetResult();
         }}
 
 ";
                 Save = $@"       public bool Save()
         {{
-            return SaveAsync().GetAwaiter().GetResult();
+            return {MethodNames.Save}().GetAwaiter().GetResult();
         }}
 
 ";
-                Delete = $@"        public bool Delete(int id)
+                Delete = $@"        public bool Delete({TableIdDT} id)
         {{
-            return DeleteAsync(id).GetAwaiter().GetResult();
+            return {MethodNames.Delete}(id).GetAwaiter().GetResult();
         }}
 
 ";
-                IsExist = $@"        public bool IsExists(int id)
+                IsExist = $@"        public bool IsExists({TableIdDT} id)
         {{
-            return IsExistsAsync(id).GetAwaiter().GetResult();
+            return {MethodNames.IsExists}(id).GetAwaiter().GetResult();
         }}
 
 ";
@@ -637,7 +635,7 @@ return null;
 ";
             string FindByCountryName = $@"         public static {LogicClsName} Find(string CountryName)
     {{
-        return FindAsync(CountryName).GetAwaiter().GetResult();
+        return {MethodNames.GetById}(CountryName).GetAwaiter().GetResult();
     }}
 
 ";
@@ -697,7 +695,7 @@ return null;
         {
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle:
+                case enCodeStyle.Ado:
                     {
                         string PasswordValidatation = "";
                         if (FormatHelper.Singularize(TableName.ToLower()) == "user")
@@ -714,7 +712,7 @@ return null;
         {{{PasswordValidatation}
             try
             {{
-                this.{TableId} = await {DataClsName}.AddAsync(DTO);
+                this.{TableId} = await {DataClsName}.{MethodNames.Add}(DTO);
                 return (this.{TableId} != -1);
             }}
             catch (Exception ex)
@@ -726,13 +724,13 @@ return null;
 
 "; ;
                     }
-                case enCodeStyle.EFStyle:
-                    { return $@"              public async Task<int> AddAsync({ModelName} {FormattedTNSingleVar})
+                case enCodeStyle.EF:
+                    { return $@"              {ImplementationMethod(MethodNames.Add)}
         {{
-              int {FormattedTNSingleVar}Id = -1;
+              {TableIdDT} {FormattedTNSingleVar}Id = -1;
             try
             {{
-                {FormattedTNSingleVar}Id = await {DataObjName}.AddAsync({FormattedTNSingleVar});
+                {FormattedTNSingleVar}Id = await {DataObjName}.{MethodNames.Add}({FormattedTNSingleVar});
                 return {FormattedTNSingleVar}Id;
             }}
             catch (Exception ex)
@@ -752,7 +750,7 @@ return null;
         {
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle:
+                case enCodeStyle.Ado:
                     {
                         string PasswordValidatation = "";
                         if (FormatHelper.Singularize(TableName.ToLower()) == "user")
@@ -780,12 +778,12 @@ return null;
 
 ";
                     }
-                case enCodeStyle.EFStyle:
-                    { return $@"            public async Task<bool> UpdateAsync({ModelName} {FormattedTNSingleVar})
+                case enCodeStyle.EF:
+                    { return $@"            {ImplementationMethod(MethodNames.Update)}
         {{
             try
             {{
-                return await {DataObjName}.UpdateAsync({FormattedTNSingleVar});
+                return await {DataObjName}.{MethodNames.Update}({FormattedTNSingleVar});
             }}
             catch (Exception ex)
             {{
@@ -805,12 +803,12 @@ return null;
 
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle:
-                    { return $@"        public static async Task<List<{DtoClsName}>> GetAllAsync(int pageNumber = 1, int pageSize = 50)
+                case enCodeStyle.Ado:
+                    { return $@"        public static async Task<List<{DtoClsName}>> {MethodNames.GetAll}(int pageNumber = 1, int pageSize = 50)
         {{
             try
             {{
-                return await {DataClsName}.GetAllAsync( pageNumber,  pageSize );
+                return await {DataClsName}.{MethodNames.GetAll}( pageNumber,  pageSize );
             }}
             catch (Exception ex)
             {{
@@ -820,12 +818,12 @@ return null;
         }}
 
 "; }
-                case enCodeStyle.EFStyle:
-                    { return $@"        public async Task<List<{ModelName}>> GetAllAsync(int pageNumber = 1, int pageSize = 50)
+                case enCodeStyle.EF:
+                    { return $@"        {ImplementationMethod(MethodNames.GetAll)}
         {{
             try
             {{
-                return await {DataObjName}.GetAllAsync( pageNumber,  pageSize );
+                return await {DataObjName}.{MethodNames.GetAll}( pageNumber,  pageSize );
             }}
             catch (Exception ex)
             {{
@@ -849,20 +847,20 @@ return null;
         {
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle:
+                case enCodeStyle.Ado:
                     {
-                        return $@"        public static async Task<bool> IsExistsAsync(int {TableId})
+                        return $@"        public static async Task<bool> {MethodNames.IsExists}({TableIdDT} {FormattedTableId})
         {{
-            return await {DataClsName}.IsExistsAsync({TableId});
+            return await {DataClsName}.{MethodNames.IsExists}({FormattedTableId});
         }}
 
 ";
                     }
-                case enCodeStyle.EFStyle:
+                case enCodeStyle.EF:
                     {
-                        return $@"        public async Task<bool> IsExistsAsync(int id)
+                        return $@"        {ImplementationMethod(MethodNames.IsExists)}
         {{
-            return await {DataObjName}.IsExistsAsync(id);
+            return await {DataObjName}.{MethodNames.IsExists}(id);
         }}
 
 ";
@@ -879,17 +877,17 @@ return null;
         {
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle:
-                    { return $@"        public static async Task<bool> DeleteAsync(int id)
+                case enCodeStyle.Ado:
+                    { return $@"        public static async Task<bool> {MethodNames.Delete}({TableIdDT} id)
         {{
-            return await {DataClsName}.DeleteAsync(id);
+            return await {DataClsName}.{MethodNames.Delete}(id);
         }}
 
 "; }
-                case enCodeStyle.EFStyle:
-                    { return $@"        public async Task<bool> DeleteAsync(int id)
+                case enCodeStyle.EF:
+                    { return $@"        {ImplementationMethod(MethodNames.Delete)}
         {{
-            return await {DataObjName}.DeleteAsync(id);
+            return await {DataObjName}.{MethodNames.Delete}(id);
         }}
 
 "; }
@@ -927,7 +925,7 @@ return null;
         {
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle: { return $@"        public async Task<bool> SaveAsync()
+                case enCodeStyle.Ado: { return $@"        public async Task<bool> {MethodNames.Save}()
         {{
             switch (Mode)
             {{
@@ -953,9 +951,9 @@ return null;
         }}
 
 "; }
-                case enCodeStyle.EFStyle:
+                case enCodeStyle.EF:
                     {
-                        return @$" public async Task<bool> SaveAsync({ModelName} {FormattedTNSingleVar}) => {FormattedTNSingleVar}.{TableId} <= 0 ? await AddAsync({FormattedTNSingleVar}) != -1 : await UpdateAsync({FormattedTNSingleVar});
+                        return @$" {ImplementationMethod(MethodNames.Save)} => {FormattedTNSingleVar}.{FormattedTableId} <= 0 ? await {MethodNames.Add}({FormattedTNSingleVar}) != -1 : await {MethodNames.Update}({FormattedTNSingleVar});
 ";
                     }
                 default: throw new ArgumentException("Invalid code style specified.");
@@ -977,20 +975,12 @@ return null;
 
         #region Generation Methods
 
-        public static bool GenerateEFBlCode(string tableName)
+        public bool GenerateEFBlCode(out string filePath)
         {
-            if (tableName == null)
-            {
-                return false;
-            }
-            else
-            {
-                TableName = tableName;
-            }
+            filePath = null;
 
-            var style = enCodeStyle.EFStyle;
+            var style = enCodeStyle.EF;
 
-            string folderPath = Path.Combine(StoringPath, "BusinessLogic");
 
 
             StringBuilder blCode = new StringBuilder();
@@ -1027,23 +1017,26 @@ return null;
             //blCode.Append(SynchronousWrappers(style));
             blCode.Append(Closing());
 
-            return FileHelper.StoreToFile(blCode.ToString(), $"{LogicClsName}.cs", folderPath, true) && ClsInterfacesGenerator.GenerateInterfaceCode(tableName);
+            string folderPath = Path.Combine(StoringPath, "Logic");
+            string fileName = $"{LogicClsName}.cs";
+
+            bool success = FileHelper.StoreToFile(blCode.ToString(), fileName, folderPath, true);
+            //&& ClsInterfacesGenerator.GenerateInterfaceCode(tableName,out string interfacesFilePath);
+
+            if (success)
+            {
+                filePath = Path.Combine(folderPath, fileName);
+            }
+
+            return success;
         }
 
-        public static bool GenerateAdoBlCode(string tableName)
+        public bool GenerateAdoBlCode(out string filePath)
         {
-            if (tableName == null)
-            {
-                return false;
-            }
-            else
-            {
-                TableName = tableName;
-            }
+            filePath = null;
+            var style = enCodeStyle.Ado;
 
-            var style = enCodeStyle.AdoStyle;
 
-            string folderPath = Path.Combine(StoringPath, "BusinessLogic");
 
             StringBuilder blCode = new StringBuilder();
 
@@ -1082,10 +1075,20 @@ return null;
             blCode.Append(SynchronousWrappers(style));
             blCode.Append(Closing());
 
-            return FileHelper.StoreToFile(blCode.ToString(), $"{LogicClsName}.cs", folderPath, true); ;
+            string folderPath = Path.Combine(StoringPath, "Logic");
+            string fileName = $"{LogicClsName}.cs";
+
+            bool success = FileHelper.StoreToFile(blCode.ToString(), fileName, folderPath, true);
+
+            if (success)
+            {
+                filePath = Path.Combine(folderPath, fileName);
+            }
+
+            return success;
         }
 
-        public static bool GenerateBlCode(string tableName, enCodeStyle codeStyle) => (codeStyle == enCodeStyle.AdoStyle ? GenerateAdoBlCode(tableName) : GenerateEFBlCode(tableName));
+        public bool GenerateBlCode(enCodeStyle codeStyle, out string path) => (codeStyle == enCodeStyle.Ado ? GenerateAdoBlCode(out path) : GenerateEFBlCode(out path));
 
         #endregion
 

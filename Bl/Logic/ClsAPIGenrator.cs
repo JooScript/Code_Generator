@@ -1,3 +1,4 @@
+using System.Data;
 using System.Security.AccessControl;
 using System.Text;
 using Utilities;
@@ -8,6 +9,11 @@ namespace CodeGenerator.Bl
     {
         private static int _versionNumber = 1;
         private static readonly object _versionLock = new object();
+
+        public ClsAPIGenerator(string tableName) : base(tableName)
+        {
+
+        }
 
         /// <summary>
         /// Gets or sets the application version number.
@@ -54,7 +60,7 @@ namespace CodeGenerator.Bl
 
             foreach (var column in Columns)
             {
-                if (column.IsNullable || column.IsIdentity)
+                if (column.IsNullable || column.IsPrimaryKey)
                 {
                     continue;
                 }
@@ -111,7 +117,7 @@ namespace CodeGenerator.Bl
 
         private static string TopUsing(enCodeStyle codeStyle)
         {
-            string models = codeStyle == enCodeStyle.AdoStyle ? "" : $"using {AppName}.Models;{Environment.NewLine}using AutoMapper;{Environment.NewLine}";
+            string models = codeStyle == enCodeStyle.Ado ? "" : $"using {AppName}.Models;{Environment.NewLine}using AutoMapper;{Environment.NewLine}";
             return $@"using Microsoft.AspNetCore.Mvc;
 using {AppName}.Bl;
 using {AppName}.DTO;
@@ -139,16 +145,16 @@ namespace {AppName}.Controllers
         {
             switch (codeStyle)
             {
-                case enCodeStyle.EFStyle:
+                case enCodeStyle.EF:
                     {
 
-                        return @$"        [HttpGet(""ById/{{Id:int:min(1)}}"", Name = ""Get{FormattedTNSingle}ById"")]
+                        return @$"        [HttpGet(""ById/{{Id:{TableIdDT}:min(1)}}"", Name = ""Get{FormattedTNSingle}ById"")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<{DtoClsName}>> Get{FormattedTNSingle}ById(int Id)
+        public async Task<ActionResult<{DtoClsName}>> Get{FormattedTNSingle}ById({TableIdDT} Id)
         {{
-            {ModelName} {FormattedTNSingleVar} = await {LogicObjName}.FindAsync(Id);
+            {ModelName} {FormattedTNSingleVar} = await {LogicObjName}.{MethodNames.GetById}(Id);
 
             if ({FormattedTNSingleVar} == null)
             {{
@@ -159,14 +165,14 @@ namespace {AppName}.Controllers
         }}";
 
                     }
-                case enCodeStyle.AdoStyle:
-                    { return $@"        [HttpGet(""ById/{{Id:int:min(1)}}"", Name = ""Get{FormattedTNSingle}ById"")]
+                case enCodeStyle.Ado:
+                    { return $@"        [HttpGet(""ById/{{Id:{TableIdDT}:min(1)}}"", Name = ""Get{FormattedTNSingle}ById"")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<{DtoClsName}>> Get{FormattedTNSingle}ById(int Id)
+        public async Task<ActionResult<{DtoClsName}>> Get{FormattedTNSingle}ById({TableIdDT} Id)
         {{
-            {LogicClsName} {FormattedTNSingleVar} = await {LogicClsName}.FindAsync(Id);
+            {LogicClsName} {FormattedTNSingleVar} = await {LogicClsName}.{MethodNames.GetById}(Id);
 
             if ({FormattedTNSingleVar} == null)
             {{
@@ -186,7 +192,7 @@ namespace {AppName}.Controllers
         {
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle:
+                case enCodeStyle.Ado:
                     { return $@"        [HttpPost(Name = ""Add{FormattedTNSingle}"")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -198,14 +204,14 @@ namespace {AppName}.Controllers
             }}
 
             {LogicClsName} {FormattedTNSingleVar} = new {LogicClsName}(new{FormattedTNSingle});
-            await {FormattedTNSingleVar}.SaveAsync();
+            await {FormattedTNSingleVar}.{MethodNames.Save}();
             new{FormattedTNSingle}.Id = {FormattedTNSingleVar}.{TableId};
 
             return CreatedAtRoute(""Get{FormattedTNSingle}ById"", new {{ id = new{FormattedTNSingle}.Id }}, new{FormattedTNSingle});
         }}
 
 "; }
-                case enCodeStyle.EFStyle:
+                case enCodeStyle.EF:
                     { return @$"        [HttpPost(Name = ""Add{FormattedTNSingle}"")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -216,7 +222,7 @@ namespace {AppName}.Controllers
                 return BadRequest(""Invalid {FormattedTNSingleVar} data."");
             }}
 
-            int {FormattedTNSingleVar}Id = await {LogicObjName}.AddAsync(_mapper.Map<{ModelName}>(new{FormattedTNSingle}));
+            {TableIdDT} {FormattedTNSingleVar}Id = await {LogicObjName}.{MethodNames.Add}(_mapper.Map<{ModelName}>(new{FormattedTNSingle}));
 
             if ({FormattedTNSingleVar}Id <= 0)
             {{
@@ -238,20 +244,20 @@ namespace {AppName}.Controllers
         {
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle:
+                case enCodeStyle.Ado:
                     {
-                        return $@"        [HttpPut(""{{Id:int:min(1)}}"", Name = ""Update{FormattedTNSingle}"")]
+                        return $@"        [HttpPut(""{{Id:{TableIdDT}:min(1)}}"", Name = ""Update{FormattedTNSingle}"")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<{DtoClsName}>> Update{FormattedTNSingle}(int Id, {DtoClsName} updated{FormattedTNSingle})
+        public async Task<ActionResult<{DtoClsName}>> Update{FormattedTNSingle}({TableIdDT} Id, {DtoClsName} updated{FormattedTNSingle})
         {{
             if (updated{FormattedTNSingle} == null{GetValidationChecks(true)})
             {{
                 return BadRequest(""Invalid {FormattedTNSingleVar} data."");
             }}
 
-            {LogicClsName} {FormattedTNSingleVar} = await {LogicClsName}.FindAsync(Id);
+            {LogicClsName} {FormattedTNSingleVar} = await {LogicClsName}.{MethodNames.GetById}(Id);
 
             if ({FormattedTNSingleVar} == null)
             {{
@@ -260,34 +266,34 @@ namespace {AppName}.Controllers
 
             {GeneratePropertyAssignments()}
 
-            await {FormattedTNSingleVar}.SaveAsync();
+            await {FormattedTNSingleVar}.{MethodNames.Save}();
 
             return Ok({FormattedTNSingleVar}.DTO);
         }}
 
 ";
                     }
-                case enCodeStyle.EFStyle:
+                case enCodeStyle.EF:
                     {
-                        return @$"        [HttpPut(""{{Id:int:min(1)}}"", Name = ""Update{FormattedTNSingle}"")]
+                        return @$"        [HttpPut(""{{Id:{TableIdDT}:min(1)}}"", Name = ""Update{FormattedTNSingle}"")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<{DtoClsName}>> Update{FormattedTNSingle}(int Id, {DtoClsName} updated{FormattedTNSingle})
+        public async Task<ActionResult<{DtoClsName}>> Update{FormattedTNSingle}({TableIdDT} Id, {DtoClsName} updated{FormattedTNSingle})
         {{
             if (!ModelState.IsValid)
             {{
                 return BadRequest(""Invalid {FormattedTNSingleVar} data."");
             }}
 
-            if (!await {LogicObjName}.IsExistsAsync(Id))
+            if (!await {LogicObjName}.{MethodNames.IsExists}(Id))
             {{
                 return NotFound($""{FormattedTNSingle} with ID {{Id}} not found."");
             }}
 
             updated{FormattedTNSingle}.Id = Id;
 
-            if (!await {LogicObjName}.UpdateAsync(_mapper.Map<{ModelName}>(updated{FormattedTNSingle})))
+            if (!await {LogicObjName}.{MethodNames.Update}(_mapper.Map<{ModelName}>(updated{FormattedTNSingle})))
             {{
                 return BadRequest(""Failed to update {FormattedTNSingleVar}."");
             }}
@@ -304,7 +310,7 @@ namespace {AppName}.Controllers
         {
             switch (codeStyle)
             {
-                case enCodeStyle.AdoStyle:
+                case enCodeStyle.Ado:
                     {
                         return $@"        [HttpGet(""All"", Name = ""GetAll{FormattedTNPluralize}"")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -328,7 +334,7 @@ namespace {AppName}.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<{DtoClsName}>>> GetAll{FormattedTNPluralize}(int pageNumber = 1, int pageSize = 50)
         {{
-            var {FormattedTNPluralizeVar}List = await {LogicObjName}.GetAllAsync(pageNumber, pageSize);
+            var {FormattedTNPluralizeVar}List = await {LogicObjName}.{MethodNames.GetAll}(pageNumber, pageSize);
             if ({FormattedTNPluralizeVar}List.Count == 0)
             {{
                 return NotFound(""No {FormattedTNPluralize} Found!"");
@@ -342,14 +348,14 @@ namespace {AppName}.Controllers
 
         private static string IsExistsEndpoint(enCodeStyle codeStyle)
         {
-            var objectName = codeStyle == enCodeStyle.EFStyle ? LogicObjName : LogicClsName;
+            var objectName = codeStyle == enCodeStyle.EF ? LogicObjName : LogicClsName;
 
-            return $@"        [HttpGet(""IsExists/{{Id:int:min(1)}}"", Name = ""Is{FormattedTNSingle}Exists"")]
+            return $@"        [HttpGet(""IsExists/{{Id:{TableIdDT}:min(1)}}"", Name = ""Is{FormattedTNSingle}Exists"")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Is{FormattedTNSingle}Exists(int Id)
+        public async Task<IActionResult> Is{FormattedTNSingle}Exists({TableIdDT} Id)
         {{
-            bool exists = await {objectName}.IsExistsAsync(Id);
+            bool exists = await {objectName}.{MethodNames.IsExists}(Id);
             if (!exists)
             {{
                 return NotFound(new {{ Message = ""{FormattedTNSingle} Not Found!"" }});
@@ -362,14 +368,14 @@ namespace {AppName}.Controllers
 
         private static string GetCountEndpoint(enCodeStyle codeStyle)
         {
-            var objectName = codeStyle == enCodeStyle.EFStyle ? LogicObjName : LogicClsName;
+            var objectName = codeStyle == enCodeStyle.EF ? LogicObjName : LogicClsName;
 
             return $@"        [HttpGet(""Count"", Name = ""Get{FormattedTNPluralize}Count"")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<int>> Get{FormattedTNPluralize}Count()
+        public async Task<ActionResult<{TableIdDT}>> Get{FormattedTNPluralize}Count()
         {{
-            return Ok(await {objectName}.CountAsync());
+            return Ok(await {objectName}.{MethodNames.Count}());
         }}
 
 ";
@@ -377,14 +383,14 @@ namespace {AppName}.Controllers
 
         private static string DeleteEndpoint(enCodeStyle codeStyle)
         {
-            var objectName = codeStyle == enCodeStyle.EFStyle ? LogicObjName : LogicClsName;
-            return $@"        [HttpDelete(""{{Id:int:min(1)}}"", Name = ""Delete{FormattedTNSingle}"")]
+            var objectName = codeStyle == enCodeStyle.EF ? LogicObjName : LogicClsName;
+            return $@"        [HttpDelete(""{{Id:{TableIdDT}:min(1)}}"", Name = ""Delete{FormattedTNSingle}"")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> Delete{FormattedTNSingle}(int Id)
+        public async Task<ActionResult> Delete{FormattedTNSingle}({TableIdDT} Id)
         {{        
-            if (await {objectName}.DeleteAsync(Id))
+            if (await {objectName}.{MethodNames.Delete}(Id))
             {{
                 return Ok($""{FormattedTNSingle} with ID {{Id}} has been deleted."");
             }}
@@ -407,62 +413,23 @@ namespace {AppName}.Controllers
 
         #region Mapping & DI
 
-        public static bool GenerateMappingCode(string tableName)
-        {
-            if (tableName == null)
-            {
-                return false;
-            }
-            else
-            {
-                TableName = tableName;
-            }
-            StringBuilder mappingCode = new StringBuilder();
+        public bool GenerateMappingCode() => FileHelper.StoreToFile(@$"CreateMap<{ModelName}, {DtoClsName}>().ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.{FormattedTableId})).ReverseMap();{Environment.NewLine}", MappingTxt, StoringPath, false);
 
-            mappingCode.Append(@$"CreateMap<{ModelName}, {DtoClsName}>().ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.{TableId})).ReverseMap();{Environment.NewLine}");
-            string folderPath = Path.Combine(StoringPath);
-            string fileName = $"Mapping.txt";
-            return FileHelper.StoreToFile(mappingCode.ToString(), fileName, folderPath, false);
-        }
-
-        public static bool GenerateDIode(string tableName)
-        {
-            if (tableName == null)
-            {
-                return false;
-            }
-            else
-            {
-                TableName = tableName;
-            }
-            StringBuilder DiCode = new StringBuilder();
-
-            DiCode.Append(@$"builder.Services.AddScoped<{LogicInterfaceName}, {LogicClsName}>();{Environment.NewLine}");
-            string folderPath = Path.Combine(StoringPath);
-            string fileName = $"Dependency_Injection.txt";
-            return FileHelper.StoreToFile(DiCode.ToString(), fileName, folderPath, false);
-        }
+        private bool GenerateDICode() => FileHelper.StoreToFile(@$"builder.Services.AddScoped<{LogicInterfaceName}, {LogicClsName}>();{Environment.NewLine}", BlDiTxt, StoringPath, false) && FileHelper.StoreToFile(@$"builder.Services.AddScoped<{DataInterfaceName}, {DataClsName}>();{Environment.NewLine}", DaDiTxt, StoringPath, false);
 
         #endregion
 
-        public static bool GenerateControllerCode(string tableName, enCodeStyle codeStyle)
+        public bool GenerateControllerCode(enCodeStyle codeStyle, out string filePath)
         {
-            if (tableName == null)
-            {
-                return false;
-            }
-            else
-            {
-                TableName = tableName;
-            }
+            filePath = null;
 
             StringBuilder controllerCode = new StringBuilder();
 
             controllerCode.Append(TopUsing(codeStyle));
 
-            if (codeStyle == enCodeStyle.EFStyle)
+            if (codeStyle == enCodeStyle.EF)
             {
-                if (!GenerateDIode(tableName) || !GenerateMappingCode(tableName))
+                if (!GenerateDICode() || !GenerateMappingCode())
                 {
                     Helper.ErrorLogger(new Exception("Failed to generate DI or Mapping code."));
                     return false;
@@ -481,7 +448,16 @@ namespace {AppName}.Controllers
 
             string folderPath = Path.Combine(StoringPath, "Controllers");
             string fileName = $"{ControllerName}.cs";
-            return FileHelper.StoreToFile(controllerCode.ToString(), fileName, folderPath, true);
+            bool success = FileHelper.StoreToFile(controllerCode.ToString(), fileName, folderPath, true);
+
+
+
+            if (success)
+            {
+                filePath = Path.Combine(folderPath, fileName);
+            }
+
+            return success;
         }
 
     }

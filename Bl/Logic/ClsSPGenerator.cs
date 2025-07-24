@@ -4,10 +4,14 @@ namespace CodeGenerator.Bl
 {
     public class ClsSPGenerator : ClsGenerator
     {
+        public ClsSPGenerator(string tableName) : base(tableName)
+        {
+
+        }
 
         #region SP Structure
 
-        public static bool IsExistsSP()
+        public bool IsExistsSP()
         {
             string procedureName = $"SP_Is{FormattedTNSingle}Exists";
 
@@ -26,7 +30,7 @@ END";
             return DatabaseHelper.CreateStoredProcedure(procedureName, procedureBody);
         }
 
-        public static bool CountSP()
+        public bool CountSP()
         {
             string procedureName = $"SP_{FormattedTNPluralize}Count";
 
@@ -41,7 +45,7 @@ END";
             return DatabaseHelper.CreateStoredProcedure(procedureName, procedureBody);
         }
 
-        public static bool GetAllSP()
+        public bool GetAllSP()
         {
             string procedureName = $"SP_GetAll{FormattedTNPluralize}";
 
@@ -61,7 +65,7 @@ END";
             return DatabaseHelper.CreateStoredProcedure(procedureName, procedureBody);
         }
 
-        public static bool GetByIdSP()
+        public bool GetByIdSP()
         {
             string procedureName = $"SP_Get{FormattedTNSingle}ById";
 
@@ -78,7 +82,7 @@ END";
             return DatabaseHelper.CreateStoredProcedure(procedureName, procedureBody);
         }
 
-        public static bool AddNewSP()
+        public bool AddNewSP()
         {
             string procedureName = $"SP_Add{FormattedTNSingle}";
 
@@ -100,7 +104,7 @@ END";
             return DatabaseHelper.CreateStoredProcedure(procedureName, procedureBody);
         }
 
-        public static bool UpdateSP()
+        public bool UpdateSP()
         {
             string procedureName = $"SP_Update{FormattedTNSingle}";
 
@@ -118,7 +122,7 @@ END";
             return DatabaseHelper.CreateStoredProcedure(procedureName, procedureBody);
         }
 
-        public static bool DeleteSP()
+        public bool DeleteSP()
         {
             string procedureName = $"SP_Delete{FormattedTNSingle}";
 
@@ -137,7 +141,7 @@ END";
             return DatabaseHelper.CreateStoredProcedure(procedureName, procedureBody);
         }
 
-        public static bool FindByCountryNameSP()
+        public bool FindByCountryNameSP()
         {
             string procedureName = $"SP_Find{FormattedTNSingle}ByCountryName";
 
@@ -153,7 +157,7 @@ END";
             return DatabaseHelper.CreateStoredProcedure(procedureName, procedureBody);
         }
 
-        public static bool FindByPersonIdSP()
+        public bool FindByPersonIdSP()
         {
             string procedureName = $"SP_Find{FormattedTNSingle}ByPersonId";
 
@@ -169,7 +173,7 @@ END";
             return DatabaseHelper.CreateStoredProcedure(procedureName, procedureBody);
         }
 
-        public static bool FindByUsernameAndPasswordSP()
+        public bool FindByUsernameAndPasswordSP()
         {
             string procedureName = $"SP_Find{FormattedTNSingle}ByUsernameAndPassword";
 
@@ -188,7 +192,7 @@ END";
             return DatabaseHelper.CreateStoredProcedure(procedureName, procedureBody);
         }
 
-        public static bool IsExistsByUsernameSP()
+        public bool IsExistsByUsernameSP()
         {
             string procedureName = $"SP_Is{FormattedTNSingle}ExistsByUsername";
 
@@ -207,7 +211,7 @@ END";
             return DatabaseHelper.CreateStoredProcedure(procedureName, procedureBody);
         }
 
-        public static bool IsExistsByPersonIdSP()
+        public bool IsExistsByPersonIdSP()
         {
             string procedureName = $"SP_Is{FormattedTNSingle}ExistsByPersonId";
 
@@ -243,7 +247,7 @@ END";
 
         private static string GetInsertValuesList()
         {
-            var columns = ClsGenerator.Columns.Where(c => !c.IsIdentity);
+            var columns = ClsGenerator.Columns.Where(c => !c.IsPrimaryKey);
             return string.Join(",\n            ", columns.Select(c => $"@{c.Name}"));
         }
 
@@ -313,7 +317,7 @@ END";
 
         #endregion
 
-        public static bool GenerateAllSPs()
+        public bool GenerateAllSPs()
         {
             bool allSuccess = true;
 

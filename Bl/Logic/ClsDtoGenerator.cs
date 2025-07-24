@@ -1,3 +1,4 @@
+using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Utilities;
 
@@ -5,6 +6,11 @@ namespace CodeGenerator.Bl
 {
     public class ClsDtoGenerator : ClsGenerator
     {
+        public ClsDtoGenerator(string tableName) : base(tableName)
+        {
+
+        }
+
         private static string ConstructorAssignments()
         {
             var sb = new StringBuilder();
@@ -84,18 +90,12 @@ namespace CodeGenerator.Bl
             return sb.ToString();
         }
 
-        public static bool GenerateDTO(string tableName, enCodeStyle codeStyle)
+        public bool GenerateDTO(enCodeStyle codeStyle, out string filePath)
         {
-            if (tableName == null)
-            {
-                return false;
-            }
-            else
-            {
-                TableName = tableName;
-            }
+            filePath = null;
 
-            string folderPath = Path.Combine(StoringPath, "DTO");
+
+
 
             string TopUsing = $@"using {AppName}.Da;
 
@@ -107,7 +107,7 @@ namespace {AppName}.DTO
             var dto = new StringBuilder();
             dto.AppendLine(TopUsing);
 
-            if (codeStyle == enCodeStyle.AdoStyle)
+            if (codeStyle == enCodeStyle.Ado)
             {
                 dto.AppendLine(ParameterizedConstructor());
             }
@@ -115,11 +115,18 @@ namespace {AppName}.DTO
             dto.AppendLine(Properties());
             dto.Append($@"}}}}");
 
+            string folderPath = Path.Combine(StoringPath, "DTO");
+            string fileName = $"{DtoClsName}.cs";
 
-            return FileHelper.StoreToFile(dto.ToString(), $"{DtoClsName}.cs", folderPath, true);
+            bool success = FileHelper.StoreToFile(dto.ToString(), fileName, folderPath, true);
+
+            if (success)
+            {
+                filePath = Path.Combine(folderPath, fileName);
+            }
+
+            return success;
         }
 
     }
 }
-
-

@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text;
 using Utilities;
 
@@ -5,42 +6,85 @@ namespace CodeGenerator.Bl
 {
     public class ClsInterfacesGenerator : ClsGenerator
     {
-        #region Interfaces
-
-        private static string Interface()
+        public ClsInterfacesGenerator(string tableName) : base(tableName)
         {
-            return $@"    public interface {LogicInterfaceName}
+
+        }
+
+        #region Private Methods
+
+        private static string GenerateRepositoryMethodDeclarations(enInterfaceType interfaceType)
+        {
+            StringBuilder repoCode = new StringBuilder();
+            repoCode.AppendLine(RepoMethods[MethodNames.GetById]);
+            repoCode.AppendLine(RepoMethods[MethodNames.GetAll]);
+            repoCode.AppendLine(RepoMethods[MethodNames.Add]);
+            repoCode.AppendLine(RepoMethods[MethodNames.Update]);
+
+            if (interfaceType == enInterfaceType.Bl)
+            {
+                repoCode.AppendLine(RepoMethods[MethodNames.Save]);
+            }
+
+            repoCode.AppendLine(RepoMethods[MethodNames.IsExists]);
+            repoCode.AppendLine(RepoMethods[MethodNames.Count]);
+            repoCode.AppendLine(RepoMethods[MethodNames.Delete]);
+
+            return repoCode.ToString();
+        }
+
+        private static string GenerateInterfaceDefinition(enInterfaceType interfaceType)
+        {
+            string interfaceName = interfaceType == enInterfaceType.Bl ? LogicInterfaceName : DataInterfaceName;
+            return $@"    public interface {interfaceName}
     {{
-    public  Task<{ModelName}> FindAsync(int id);
-    public  Task<List<{ModelName}>> GetAllAsync(int pageNumber = 1, int pageSize = 50);
-    public Task<int> AddAsync({ModelName} {FormattedTNSingleVar});
-    public Task<bool> UpdateAsync({ModelName} {FormattedTNSingleVar});
-    public  Task<bool> SaveAsync({ModelName} {FormattedTNSingleVar});
-    public  Task<bool> IsExistsAsync(int id);
-    public  Task<int> CountAsync();
-    public  Task<bool> DeleteAsync(int id);
+{GenerateRepositoryMethodDeclarations(interfaceType)}
     }}";
         }
 
-        public static bool GenerateInterfaceCode(string tableName)
+        private enum enInterfaceType
         {
-            if (tableName == null)
+            Bl,
+            Da
+        }
+
+        private bool _GenerateInterfaceFile(enInterfaceType interfaceType, out string filePath)
+        {
+            filePath = null;
+
+
+
+            string folderName = interfaceType == enInterfaceType.Bl ? "BlInterfaces" : "DaInterfaces";
+            string folderPath = Path.Combine(StoringPath, folderName);
+
+            StringBuilder fileContent = new StringBuilder();
+            fileContent.AppendLine($"using {AppName}.Models;");
+            fileContent.Append(GenerateInterfaceDefinition(interfaceType));
+
+            string interfaceName = interfaceType == enInterfaceType.Bl ? LogicInterfaceName : DataInterfaceName;
+            string fileName = $"{interfaceName}.cs";
+            bool success = FileHelper.StoreToFile(fileContent.ToString(), fileName, folderPath, true);
+
+            if (success)
             {
-                return false;
-            }
-            else
-            {
-                TableName = tableName;
+                filePath = Path.Combine(folderPath, fileName);
             }
 
-            string folderPath = Path.Combine(StoringPath, "Interfaces");
+            return success;
+        }
 
-            StringBuilder blCode = new StringBuilder();
-            blCode.AppendLine(@$"using {AppName}.Models;");
+        #endregion
 
-            blCode.Append(Interface());
+        #region Public Methods
 
-            return FileHelper.StoreToFile(blCode.ToString(), $"{LogicInterfaceName}.cs", folderPath, true);
+        public bool GenerateBlInterfaceCode(out string filePath)
+        {
+            return _GenerateInterfaceFile(enInterfaceType.Bl, out filePath);
+        }
+
+        public bool GenerateDaInterfaceCode(out string filePath)
+        {
+            return _GenerateInterfaceFile(enInterfaceType.Da, out filePath);
         }
 
         #endregion
